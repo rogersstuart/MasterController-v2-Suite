@@ -1,0 +1,146 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4A875F38-CD7D-4286-8EDB-C463DA461AC7}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MCICommon</RootNamespace>
+    <AssemblyName>MCICommon</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\..\..\..\..\Desktop\mci_builds\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="M2Mqtt.Net, Version=4.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Plt.M2Mqtt.4.3.0.2\lib\net45\M2Mqtt.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="MySql.Data, Version=6.10.6.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.6.10.6\lib\net452\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Net.Http" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Xml.Serialization" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ARDBConnectionManager.cs" />
+    <Compile Include="AutoRefreshDBConnection.cs" />
+    <Compile Include="BackupProperties.cs" />
+    <Compile Include="BaseConverter.cs" />
+    <Compile Include="BinaryGenerator.cs" />
+    <Compile Include="Configuration\ConfigurationManager.cs" />
+    <Compile Include="ConnectionProperties.cs" />
+    <Compile Include="DatabaseConnectionProperties.cs" />
+    <Compile Include="Database\DatabaseUtilities.cs" />
+    <Compile Include="Database\UserDBUtilities.cs" />
+    <Compile Include="DBCard.cs" />
+    <Compile Include="DebugWriter.cs" />
+    <Compile Include="DeviceServerTracker.cs" />
+    <Compile Include="Expander\Common\ExpanderCommandTransactionContainer.cs" />
+    <Compile Include="Expander\Common\ExpanderCommand.cs" />
+    <Compile Include="Expander\Common\ExpanderCommandHandle.cs" />
+    <Compile Include="Expander\Local\LocalExpanderConnection.cs" />
+    <Compile Include="Expander\Local\LocalExpanderEvent.cs" />
+    <Compile Include="Expander\Common\ExpanderEventArgs.cs" />
+    <Compile Include="Expander\Common\ExpanderModificationProperties.cs" />
+    <Compile Include="Expander\Local\LocalExpanderMonitor.cs" />
+    <Compile Include="Expander\Common\ExpanderState.cs" />
+    <Compile Include="Expander\Remote\RemoteExpanderConnection.cs" />
+    <Compile Include="Expander\Remote\RemoteExpanderEvent.cs" />
+    <Compile Include="Expander\Remote\RemoteExpanderMonitor.cs" />
+    <Compile Include="FileUtil.cs" />
+    <Compile Include="FloorStateTracker\BuildingFloor.cs" />
+    <Compile Include="FloorStateTracker\FloorStateModifier.cs" />
+    <Compile Include="FloorStateTracker\FloorStateTracker.cs" />
+    <Compile Include="Database\GroupDBUtilities.cs" />
+    <Compile Include="HardwareConfiguration.cs" />
+    <Compile Include="HostInfo.cs" />
+    <Compile Include="ListEntryUtilities.cs" />
+    <Compile Include="MCIUserExt.cs" />
+    <Compile Include="MCIWeb\UserCredentials.cs" />
+    <Compile Include="OutputModProp.cs" />
+    <Compile Include="ProgressInterface.cs" />
+    <Compile Include="ScheduleEvent.cs" />
+    <Compile Include="Standalone Controller\Common\CCExecResult.cs" />
+    <Compile Include="Standalone Controller\Common\ControllerCommandProcessor.cs" />
+    <Compile Include="Standalone Controller\Remote\RemoteControllerConnection.cs" />
+    <Compile Include="Standalone Controller\Remote\RemoteControllerEvent.cs" />
+    <Compile Include="Standalone Controller\Remote\RemoteControllerMonitor.cs" />
+    <Compile Include="Standalone Controller\Local\LocalControllerConnection.cs" />
+    <Compile Include="Standalone Controller\Local\LocalControllerEvent.cs" />
+    <Compile Include="Standalone Controller\Local\LocalControllerMonitor.cs" />
+    <Compile Include="ManagedStream.cs" />
+    <Compile Include="Configuration\MCv2Configuration.cs" />
+    <Compile Include="Configuration\MCv2Persistance.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ProtocolDetector.cs" />
+    <Compile Include="Standalone Controller\Common\ControllerCommand.cs" />
+    <Compile Include="Standalone Controller\Common\ControllerCommandHandle.cs" />
+    <Compile Include="Standalone Controller\Common\ControllerCommandTransactionContainer.cs" />
+    <Compile Include="Standalone Controller\Common\ControllerEventArgs.cs" />
+    <Compile Include="Standalone Controller\Common\ControllerState.cs" />
+    <Compile Include="SystemScheduler.cs" />
+    <Compile Include="TableWatcher.cs" />
+    <Compile Include="TCPConnectionProperties.cs" />
+    <Compile Include="Utilities.cs" />
+    <Compile Include="XMLSerdes.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="docs\MySqlCommand.xml" />
+    <Content Include="docs\MySqlCommandBuilder.xml" />
+    <Content Include="docs\MySqlConnection.xml" />
+    <Content Include="docs\MySqlConnectionStringBuilder.xml" />
+    <Content Include="docs\MySqlDataAdapter.xml" />
+    <Content Include="docs\MySqlDataReader.xml" />
+    <Content Include="docs\MySqlException.xml" />
+    <Content Include="docs\MySqlHelper.xml" />
+    <Content Include="docs\MySqlParameter.xml" />
+    <Content Include="docs\MySqlParameterCollection.xml" />
+    <Content Include="docs\MySqlTransaction.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

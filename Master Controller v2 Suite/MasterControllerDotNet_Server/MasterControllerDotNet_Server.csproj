@@ -1,0 +1,340 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{481CF166-4AEF-4CF4-879F-C7D5831655B0}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>MasterControllerDotNet_Server</RootNamespace>
+    <AssemblyName>MasterControllerDotNet_Server</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>x86</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>..\..\..\..\Desktop\mci_builds\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <StartupObject />
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Google.Protobuf, Version=3.5.1.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
+      <HintPath>..\packages\Google.Protobuf.3.5.1\lib\net45\Google.Protobuf.dll</HintPath>
+    </Reference>
+    <Reference Include="M2Mqtt.Net, Version=4.3.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Plt.M2Mqtt.4.3.0.2\lib\net45\M2Mqtt.Net.dll</HintPath>
+    </Reference>
+    <Reference Include="MathNet.Numerics, Version=4.5.1.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MathNet.Numerics.4.5.1\lib\net461\MathNet.Numerics.dll</HintPath>
+    </Reference>
+    <Reference Include="MySql.Data, Version=8.0.11.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
+      <HintPath>..\packages\MySql.Data.8.0.11\lib\net452\MySql.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.ComponentModel" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing.Design" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.Numerics" />
+    <Reference Include="System.Runtime" />
+    <Reference Include="System.Runtime.Remoting" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Windows.Forms.DataVisualization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AccessControlCard.cs" />
+    <Compile Include="AccessControlGroup.cs" />
+    <Compile Include="AccessControlLogEntry.cs" />
+    <Compile Include="AccessControlLogManager.cs" />
+    <Compile Include="AccessControlLogViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AccessControlLogViewer.Designer.cs">
+      <DependentUpon>AccessControlLogViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AccessControlProcessingCollection.cs" />
+    <Compile Include="AccessProperties.cs" />
+    <Compile Include="AltMonitor.cs" />
+    <Compile Include="ApplyAverageToForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ApplyAverageToForm.Designer.cs">
+      <DependentUpon>ApplyAverageToForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ConnectionPropertiesEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ConnectionPropertiesEditor.Designer.cs">
+      <DependentUpon>ConnectionPropertiesEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DatabaseConnectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DatabaseConnectionForm.Designer.cs">
+      <DependentUpon>DatabaseConnectionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DatabaseEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="DatabaseEditor.Designer.cs">
+      <DependentUpon>DatabaseEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ActivationProperties.cs" />
+    <Compile Include="DatabaseManager.cs" />
+    <Compile Include="ErrorLogManager.cs" />
+    <Compile Include="ErrorLogViewer.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ErrorLogViewer.Designer.cs">
+      <DependentUpon>ErrorLogViewer.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ExpanderConnectionsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExpanderConnectionsForm.Designer.cs">
+      <DependentUpon>ExpanderConnectionsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ExpanderEventEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExpanderEventEditor.Designer.cs">
+      <DependentUpon>ExpanderEventEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ExpanderEventList.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExpanderEventList.Designer.cs">
+      <DependentUpon>ExpanderEventList.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AccessControlGroupMonitor.cs" />
+    <Compile Include="ImportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ImportForm.Designer.cs">
+      <DependentUpon>ImportForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MonitorSelectionForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MonitorSelectionForm.Designer.cs">
+      <DependentUpon>MonitorSelectionForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ExpanderMonitorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ExpanderMonitorForm.Designer.cs">
+      <DependentUpon>ExpanderMonitorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GroupEditorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GroupEditorForm.Designer.cs">
+      <DependentUpon>GroupEditorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="GroupListForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GroupListForm.Designer.cs">
+      <DependentUpon>GroupListForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="HardwareConfigurationForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="HardwareConfigurationForm.Designer.cs">
+      <DependentUpon>HardwareConfigurationForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="MainForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="MainForm.Designer.cs">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PanelCommand.cs" />
+    <Compile Include="PanelCommandHandle.cs" />
+    <Compile Include="PanelConnection.cs" />
+    <Compile Include="PanelConnectionsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PanelConnectionsForm.Designer.cs">
+      <DependentUpon>PanelConnectionsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PanelEventArgs.cs" />
+    <Compile Include="PanelMonitor.cs" />
+    <Compile Include="PanelMonitorForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="PanelMonitorForm.Designer.cs">
+      <DependentUpon>PanelMonitorForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="PanelState.cs" />
+    <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ActivationPropertiesEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ActivationPropertiesEditor.Designer.cs">
+      <DependentUpon>ActivationPropertiesEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="ServerStatsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="ServerStatsForm.Designer.cs">
+      <DependentUpon>ServerStatsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="AccessPropertiesEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="AccessPropertiesEditor.Designer.cs">
+      <DependentUpon>AccessPropertiesEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="SimpleDatabaseEditor.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="SimpleDatabaseEditor.Designer.cs">
+      <DependentUpon>SimpleDatabaseEditor.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TextBoxDialog.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="TextBoxDialog.Designer.cs">
+      <DependentUpon>TextBoxDialog.cs</DependentUpon>
+    </Compile>
+    <EmbeddedResource Include="AccessControlLogViewer.resx">
+      <DependentUpon>AccessControlLogViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ApplyAverageToForm.resx">
+      <DependentUpon>ApplyAverageToForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ConnectionPropertiesEditor.resx">
+      <DependentUpon>ConnectionPropertiesEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DatabaseConnectionForm.resx">
+      <DependentUpon>DatabaseConnectionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DatabaseEditor.resx">
+      <DependentUpon>DatabaseEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ErrorLogViewer.resx">
+      <DependentUpon>ErrorLogViewer.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ExpanderConnectionsForm.resx">
+      <DependentUpon>ExpanderConnectionsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ExpanderEventEditor.resx">
+      <DependentUpon>ExpanderEventEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ExpanderEventList.resx">
+      <DependentUpon>ExpanderEventList.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ExpanderMonitorForm.resx">
+      <DependentUpon>ExpanderMonitorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="ImportForm.resx">
+      <DependentUpon>ImportForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MonitorSelectionForm.resx">
+      <DependentUpon>MonitorSelectionForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GroupEditorForm.resx">
+      <DependentUpon>GroupEditorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="GroupListForm.resx">
+      <DependentUpon>GroupListForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="HardwareConfigurationForm.resx">
+      <DependentUpon>HardwareConfigurationForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="MainForm.resx">
+      <DependentUpon>MainForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PanelConnectionsForm.resx">
+      <DependentUpon>PanelConnectionsForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="PanelMonitorForm.resx">
+      <DependentUpon>PanelMonitorForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Properties\Resources.resx">
+      <Generator>ResXFileCodeGenerator</Generator>
+      <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      <SubType>Designer</SubType>
+    </EmbeddedResource>
+    <Compile Include="Properties\Resources.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Resources.resx</DependentUpon>
+      <DesignTime>True</DesignTime>
+    </Compile>
+    <EmbeddedResource Include="ActivationPropertiesEditor.resx">
+      <DependentUpon>ActivationPropertiesEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="AccessPropertiesEditor.resx">
+      <DependentUpon>AccessPropertiesEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="SimpleDatabaseEditor.resx">
+      <DependentUpon>SimpleDatabaseEditor.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="TextBoxDialog.resx">
+      <DependentUpon>TextBoxDialog.cs</DependentUpon>
+    </EmbeddedResource>
+    <None Include="packages.config" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.Designer.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.Designer.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+      <DesignTimeSharedInput>True</DesignTimeSharedInput>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\MCICommon\MCICommon.csproj">
+      <Project>{4a875f38-cd7d-4286-8edb-c463da461ac7}</Project>
+      <Name>MCICommon</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
