@@ -10,7 +10,7 @@ That monitor application is used for fine grain control over the state of relays
 output of various sensors integrated into it. The other monitor is used to control the state of relays attached to a WiFi door
 controller.
 
-The goal for this project is to encapsulate all the tools necessary to manage a building control system. As of now that
+The goal of this project is to encapsulate all the tools necessary to manage a building control system. As of now that
 objective has not been reached and more work (specifically, a new hardware revision of the controllers) will be necessary.
 The MCI in its current form is fairly robust when used with the "offline controllers" despite being antiquated in my opinion.
 If more work was put in, this software could be very flushed out and many potentially untrusted users could access and manipulate
