@@ -14,7 +14,7 @@ The goal of this project is to encapsulate all the tools necessary to manage a b
 objective has not been reached and more work (specifically, a new hardware revision of the controllers) will be necessary.
 The MCI in its current form is fairly robust when used with the "offline controllers" despite them being antiquated in my opinion.
 If more work was put in, this software could be very flushed out and many potentially untrusted users could access and manipulate
-system data using it. That being said, for now I would suggest only using it on premisses and behind a firewall. Bringup is another
+system data using it. That being said, for now I would suggest only using it on premises (or through a VPN) and behind a firewall. Bringup is another
 issue as it was written with the intention of never having an empty list of users or a database with no tables. Some checks are
 in place but the application will crash when faced with that. You can however restore from a backup via the login form without issue.
 The first order of business in terms of making this usable for more people would be fixing that issue and possibly adding a wizard
