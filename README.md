@@ -7,7 +7,7 @@ stored in a MySQL database. In its current form it also exposes other firmware f
 and maintain the system. It can set the RTC and control the "override" state of the door control outputs on the "offline controllers."
 In addition to that two monitor applications are integrated to control other devices. One of them is called the "expander."
 That monitor application is used for fine grain control over the state of relays in that device and also provides a realtime view of the
-output of various sensors integrated into it. The other monitor is used to control the state of relays attached to a WiFi door
+output of various sensors integrated into it. In order to use the expander monitor a server application must be running on the network. The application listens for UDP broadcasts from the server and retains that information for a set period of time. There is another nonessential application called the message server that allows access to the expander via MQTT. That is currently being utilized by a Blazor web app that I haven't uploaded yet. The other monitor is used to control the state of relays attached to a WiFi door
 controller.
 
 The goal of this project is to encapsulate all the tools necessary to manage a building control system. As of now that
