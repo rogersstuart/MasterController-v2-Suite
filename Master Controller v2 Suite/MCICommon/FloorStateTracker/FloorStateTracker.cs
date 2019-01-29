@@ -14,8 +14,8 @@ namespace MCICommon
         public delegate void FreshStateAvailable(BuildingFloor f);
 
         public Object event_lock = new Object();
-
         public Object client_lock = new Object();
+
         private MqttClient client = null;
 
         private Object floor_state_access_lock = new Object();
@@ -35,6 +35,7 @@ namespace MCICommon
         public FloorStateTracker(int car_num)
         {
             this.car_num = car_num;
+            Start();
         }
 
         public void Start()
@@ -181,26 +182,27 @@ namespace MCICommon
                             f.last_reported_state = e.Message[0] == '0' ? false : true;
 
                             lock(event_lock)
-                                freshstateevent(f);
+                                if(freshstateevent != null)
+                                    freshstateevent(f);
                         }
                     }
                 });
             });
         }
 
-        private void LockFloor(int number)
+        public void LockFloor(int number)
         {
             lock(client_lock)
                 client.Publish("access_control/elevator/car_" + car_num + "/floor_" + number + "/set", new byte[] { (byte)'0' });
         }
 
-        private void UnlockFloor(int number)
+        public void UnlockFloor(int number)
         {
             lock (client_lock)
                 client.Publish("access_control/elevator/car_" + car_num + "/floor_" + number + "/set", new byte[] { (byte)'1' });
         }
 
-        private void SetFloorState(int number, bool state)
+        public void SetFloorState(int number, bool state)
         {
             if (state)
                 UnlockFloor(number);
@@ -215,7 +217,13 @@ namespace MCICommon
 
         public bool GetFloorState(int number)
         {
-           return floors[number - 1].last_reported_state;
+            lock(floors[number - 1].access_lock)
+                return floors[number - 1].last_reported_state;
+        }
+
+        public void ToggleFloor(int floor)
+        {
+
         }
     }  
 }

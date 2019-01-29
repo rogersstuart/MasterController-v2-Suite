@@ -8,7 +8,8 @@ namespace MCICommon
 {
     public class BuildingFloor
     {
-        private Object access_lock = new Object();
+        public Object access_lock = new Object();
+        public bool state;
 
         public int floor_number { get; }
         public string description { get; }
