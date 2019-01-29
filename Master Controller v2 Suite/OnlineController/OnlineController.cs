@@ -45,15 +45,26 @@ namespace OnlineController
 
             Task.Run(async () =>
             {
+                //determine car number
+                int car = -1;
+
+                if (e.Topic == "acc/elev/0/rdr/tap")
+                    car = 0;
+                else
+                if (e.Topic == "acc/elev/1/rdr/tap")
+                    car = 1;
+
+                //convert uid
                 var uid = BitConverter.ToUInt64(e.Message.Reverse().ToArray(), 0);
 
                 Console.WriteLine(uid);
 
-                //a uid of 0 is invalid
+                //a uid of 0 is invalid so return without doing anything. if the uid actually came from the panel this will
+                //result in a blinking red light
                 if (uid == 0)
                     return;
 
-                //get all cards and user associations from the database
+                //get all cards from the database
                 var cards = await GetAllCards();
 
                 Console.WriteLine("found " + cards.Count() + " cards");
@@ -61,58 +72,76 @@ namespace OnlineController
                 //find the user id of any users assigned this card
                 var users = cards.AsParallel().Where(x => x.CardNUID == uid).Select(y => y.UserAssignment);
 
-                Console.WriteLine(users.Count() + " users are assigned this card");
+                Console.WriteLine(users.Count() + " user(s) are assigned this card");
 
                 //check to see if we need to continue
                 if (users.Count() == 0)
                 {
-                    if (e.Topic == "acc/elev/0/rdr/tap")
+                    //commented out to prevent a confirmation denial
+
+                    /*
+                    if (car == 0)
                         client.Publish("acc/elev/0/rdr/tap/resp", new byte[] { 0 });
                     else
-                        if (e.Topic == "acc/elev/1/rdr/tap")
-                        client.Publish("acc/elev/1/rdr/tap/resp", new byte[] { 0 });
+                        if (car == 1)
+                            client.Publish("acc/elev/1/rdr/tap/resp", new byte[] { 0 });
+                    */
+
+                    Console.WriteLine("Denied; No Confirmation");
 
                     return;
                 }
 
                 foreach (var user in users)
                 {
+                    Console.WriteLine("processing...");
+
                     //get properties for the user from the database to determine if access will be granted and to where
 
                     if (await ProcessListEntry(user))
                     {
-                        Console.WriteLine("processing...");
+                        //if we're here the user has been approved but not yet granted entry
                         
                         //check to see what floors the user should be granted access to
                         var ext = await GetUserExtensions(user);
 
                         if (ext == null || ext.HomeFloors.Count() == 0)
                         {
-                            if (e.Topic == "acc/elev/0/rdr/tap")
+                            //if the user extensions object was null or the user isn't assigned to any floors
+                            //respond with a denial signal
+
+                            if (car == 0)
                                 client.Publish("acc/elev/0/rdr/tap/resp", new byte[] { 0 });
                             else
-                            if (e.Topic == "acc/elev/1/rdr/tap")
+                            if (car == 1)
                                 client.Publish("acc/elev/1/rdr/tap/resp", new byte[] { 0 });
+
+                            Console.WriteLine("Denied; Confirmed");
 
                             return;
                         }
                         else
                         {
+                            //if we're here then the user has been granted entry
+
                             int wait_ctr = 0;
 
                             wait_ctr = ext.HomeFloors.Count();
 
-                            
-                            //determine car number
-                            int car = -1;
+                            //respond early if there will be an extended delay
+                            bool report_early = false;
+                            if (report_early = (ext.HomeFloors.Count() > 1))
+                            {
+                                if (car == 0)
+                                    client.Publish("acc/elev/0/rdr/tap/resp", new byte[] { 1 });
+                                else
+                                if (car == 1)
+                                    client.Publish("acc/elev/1/rdr/tap/resp", new byte[] { 1 });
 
-                            if (e.Topic == "acc/elev/0/rdr/tap")
-                                car = 0;
-                            else
-                            if (e.Topic == "acc/elev/1/rdr/tap")
-                                car = 1;
+                                Console.WriteLine("Approved Early; Confirmed");
+                            }
 
-                            
+
                             Parallel.ForEach(ext.HomeFloors, floor =>
                             {
                                 FloorStateTracker tracker = trackers[car];
@@ -140,12 +169,33 @@ namespace OnlineController
                             while (wait_ctr < ext.HomeFloors.Count())
                                 await Task.Delay(1);
 
-                            if (e.Topic == "acc/elev/0/rdr/tap")
-                                client.Publish("acc/elev/0/rdr/tap/resp", new byte[] { 1 });
-                            else
-                                if (e.Topic == "acc/elev/1/rdr/tap")
-                                client.Publish("acc/elev/1/rdr/tap/resp", new byte[] { 1 });
+                            if(report_early == false)
+                            {
+                                if (car == 0)
+                                    client.Publish("acc/elev/0/rdr/tap/resp", new byte[] { 1 });
+                                else
+                                    if (car == 1)
+                                        client.Publish("acc/elev/1/rdr/tap/resp", new byte[] { 1 });
+
+                                Console.WriteLine("Approved Late; Confirmed");
+                            }
+
+                            return;
                         }
+                    }
+                    else
+                    {
+                        //the user was denied entry based on the day of week or time of day. respond with a confirmation denial signal
+
+                        if (car == 0)
+                            client.Publish("acc/elev/0/rdr/tap/resp", new byte[] { 0 });
+                        else
+                            if (car == 1)
+                            client.Publish("acc/elev/1/rdr/tap/resp", new byte[] { 0 });
+
+                        Console.WriteLine("Denied; Confirmed");
+
+                        return;
                     }
                 }
             });
