@@ -15,8 +15,10 @@ namespace GlobalUtilities
         public LoggerBaseOptions BaseOptions { get; set; }
         public LoggerRetentionOptions RetentionOptions { get; set; }
         public LoggerBlockingOptions BlockingOptions { get; set; }
+        public LoggerPerformanceOptions PerformanceOptions { get; set; }
 
-        public LoggerOptions(LoggerBaseOptions base_options = null, LoggerRetentionOptions retention_options = null, LoggerBlockingOptions blocking_options = null)
+        public LoggerOptions(LoggerBaseOptions base_options = null, LoggerRetentionOptions retention_options = null, LoggerBlockingOptions blocking_options = null,
+            LoggerPerformanceOptions performance_options = null)
         {
             if (base_options != null)
                 BaseOptions = base_options;
@@ -32,6 +34,11 @@ namespace GlobalUtilities
                 BlockingOptions = blocking_options;
             else
                 BlockingOptions = new LoggerBlockingOptions();
+            
+            if (performance_options != null)
+                PerformanceOptions = performance_options;
+            else
+                PerformanceOptions = new LoggerPerformanceOptions();
         }
     }
 
@@ -82,6 +89,16 @@ namespace GlobalUtilities
         {
             KillBlockingProcess = kill_blocking_process;
             OnBlockWaitMs = on_block_wait_ms;
+        }
+    }
+    
+    public class LoggerPerformanceOptions
+    {
+        public uint BlockCallerAtBufferLimit { get; set; }
+
+        public LoggerPerformanceOptions(uint block_caller_at_buffer_limit = 10000)
+        {
+            BlockCallerAtBufferLimit = block_caller_at_buffer_limit;
         }
     }
 
@@ -241,6 +258,7 @@ namespace GlobalUtilities
 
                                             log_stream.SetLength(bytes.Length);
                                             log_stream.Position = 0;
+                                            
                                             await log_stream.WriteAsync(bytes, 0, bytes.Length);
                                             await log_stream.FlushAsync();
                                         }
@@ -269,7 +287,7 @@ namespace GlobalUtilities
 
         public async Task AppendLogAsync(DateTime timestamp, string line)
         {
-            while (pending_log_entries.Count() > options.RetentionOptions.BlockCallerAtBufferLimit)
+            while (pending_log_entries.Count() > options.PerformanceOptions.BlockCallerAtBufferLimit)
                 await Task.Delay(1);
 
             pending_log_entries.Enqueue(new KeyValuePair<DateTime, string>(timestamp, line));
@@ -282,7 +300,7 @@ namespace GlobalUtilities
 
         public void AppendLog(DateTime timestamp, string line)
         {
-            while (pending_log_entries.Count() > options.RetentionOptions.BlockCallerAtBufferLimit)
+            while (pending_log_entries.Count() > options.PerformanceOptions.BlockCallerAtBufferLimit)
                 Thread.Sleep(1);
 
             pending_log_entries.Enqueue(new KeyValuePair<DateTime, string>(timestamp, line));
