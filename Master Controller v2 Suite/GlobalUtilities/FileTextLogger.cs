@@ -142,37 +142,53 @@ namespace GlobalUtilities
 
                 var last_check = DateTime.MinValue;
 
-                //enter contention check
+                //enter log writer loop
                 while(log_writer_active)
                 {
                     try
                     {
                         //check for a block and try to resolve the situation if present
-                        if (IsBlocked(new string[] { options.BaseOptions.LogPath }))
+                        var start_time = DateTime.Now;
+
+                        while (log_writer_active)
                         {
-                            if (options.BlockingOptions.KillBlockingProcess && (DateTime.Now - last_check >= TimeSpan.FromMilliseconds(options.BlockingOptions.OnBlockWaitMs)))
+                            try
                             {
-                                //try to end the contention
-
-                                KillBlockingProcesses(new string[] { options.BaseOptions.LogPath });
-                            }
-                            else
-                            {
-                                //we're blocked but not ready or configured to end the contention. make sure that the buffer is maintained then delay
-                                //for a bit before checking again if we didn't waste time dequeing
-
-                                KeyValuePair<DateTime, string> out_val;
-
-                                if (pending_log_entries.Count() > in_block_retention_limit)
+                                if (IsBlocked(new string[] { options.BaseOptions.LogPath }))
                                 {
-                                    while (pending_log_entries.Count() > in_block_retention_limit)
-                                        pending_log_entries.TryDequeue(out out_val);
+                                    if (options.BlockingOptions.KillBlockingProcess && (DateTime.Now - start_time >= TimeSpan.FromMilliseconds(options.BlockingOptions.OnBlockWaitMs)))
+                                    {
+                                        //try to end the contention
+
+                                        KillBlockingProcesses(new string[] { options.BaseOptions.LogPath });
+
+                                        break;
+                                    }
+                                    else
+                                    {
+                                        //we're blocked but not ready or configured to end the contention. make sure that the buffer is maintained then delay
+                                        //for a bit before checking again if we didn't waste time dequeuing
+
+                                        KeyValuePair<DateTime, string> out_val;
+
+                                        if (pending_log_entries.Count() > in_block_retention_limit)
+                                        {
+                                            while (pending_log_entries.Count() > in_block_retention_limit)
+                                                pending_log_entries.TryDequeue(out out_val);
+                                        }
+                                        else
+                                            await Task.Delay(1);
+                                    }
+
                                 }
                                 else
-                                    await Task.Delay(1);
+                                    break;
                             }
-
+                            catch (Exception ex) { }
                         }
+
+                        if (!log_writer_active)
+                            break;
 
                         //try to create the filestream
                         using (FileStream log_stream = new FileStream(options.BaseOptions.LogPath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.Read))
