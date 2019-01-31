@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -14,10 +14,10 @@ namespace GlobalUtilities
     {
         public LoggerBaseOptions BaseOptions { get; set; }
         public LoggerRetentionOptions RetentionOptions { get; set; }
-        public LoggerBlockingOptions BlockingOptions { get; set; }
+        public LoggerContentionOptions ContentionOptions { get; set; }
         public LoggerPerformanceOptions PerformanceOptions { get; set; }
 
-        public LoggerOptions(LoggerBaseOptions base_options = null, LoggerRetentionOptions retention_options = null, LoggerBlockingOptions blocking_options = null,
+        public LoggerOptions(LoggerBaseOptions base_options = null, LoggerRetentionOptions retention_options = null, LoggerContentionOptions contention_options = null,
             LoggerPerformanceOptions performance_options = null)
         {
             if (base_options != null)
@@ -30,11 +30,11 @@ namespace GlobalUtilities
             else
                 RetentionOptions = new LoggerRetentionOptions();
 
-            if (blocking_options != null)
-                BlockingOptions = blocking_options;
+            if (contention_options != null)
+                ContentionOptions = contention_options;
             else
-                BlockingOptions = new LoggerBlockingOptions();
-            
+                ContentionOptions = new LoggerContentionOptions();
+
             if (performance_options != null)
                 PerformanceOptions = performance_options;
             else
@@ -76,29 +76,34 @@ namespace GlobalUtilities
         }
     }
 
-    public class LoggerBlockingOptions
+    public class LoggerContentionOptions
     {
         public bool KillBlockingProcess { get; set; }
         public uint OnBlockWaitMs { get; set; }
         public uint InBlockRetentionLimit { get; set; }
 
-        public LoggerBlockingOptions(bool kill_blocking_process = true, uint on_block_wait_ms = 60000, uint in_block_retention_limit = 10000)
+        public LoggerContentionOptions(bool kill_blocking_process = true, uint on_block_wait_ms = 60000, uint in_block_retention_limit = 10000)
         {
             KillBlockingProcess = kill_blocking_process;
             OnBlockWaitMs = on_block_wait_ms;
             InBlockRetentionLimit = in_block_retention_limit;
         }
     }
-    
+
     public class LoggerPerformanceOptions
     {
         public uint OnCullDropBackNum { get; set; }
+        public bool EnableBlockCallerAtBufferLimit { get; set; }
         public uint BlockCallerAtBufferLimit { get; set; }
+        public bool EnableDiffWriting { get; set; }
 
-        public LoggerPerformanceOptions(uint on_cull_drop_back_num = 100, uint block_caller_at_buffer_limit = 10000)
+        public LoggerPerformanceOptions(uint on_cull_drop_back_num = 100, bool enable_block_caller_at_buffer_limit = true, uint block_caller_at_buffer_limit = 10000,
+            bool enable_diff_writing = true)
         {
             OnCullDropBackNum = on_cull_drop_back_num;
+            EnableBlockCallerAtBufferLimit = enable_block_caller_at_buffer_limit;
             BlockCallerAtBufferLimit = block_caller_at_buffer_limit;
+            EnableDiffWriting = enable_diff_writing;
         }
     }
 
@@ -111,6 +116,7 @@ namespace GlobalUtilities
         private Object task_locker = new Object();
         private Task log_writer_task = null;
         private bool log_writer_active = false;
+        private bool log_writer_complete = false;
 
         public FileTextLogger(LoggerOptions logging_options = null, bool autostart = true)
         {
@@ -122,7 +128,7 @@ namespace GlobalUtilities
             if (autostart)
                 Start();
         }
-        
+
         public LoggerOptions LoggingOptions
         {
             get { return options; }
@@ -163,7 +169,7 @@ namespace GlobalUtilities
                 var last_check = DateTime.MinValue;
 
                 //enter log writer loop
-                while(log_writer_active)
+                while (log_writer_active)
                 {
                     try
                     {
@@ -176,29 +182,33 @@ namespace GlobalUtilities
                             {
                                 if (IsBlocked(new string[] { options.BaseOptions.LogPath }))
                                 {
-                                    if (options.BlockingOptions.KillBlockingProcess && (DateTime.Now - start_time >= TimeSpan.FromMilliseconds(options.BlockingOptions.OnBlockWaitMs)))
+                                    if (options.ContentionOptions.KillBlockingProcess && (DateTime.Now - start_time >= TimeSpan.FromMilliseconds(options.ContentionOptions.OnBlockWaitMs)))
                                     {
                                         //try to end the contention
-                                        
+
                                         KillBlockingProcesses(new string[] { options.BaseOptions.LogPath });
 
                                         break;
                                     }
                                     else
                                     {
-                                        //we're blocked but not ready or configured to end the contention. make sure that the buffer is maintained then delay
+                                        //we're blocked but not ready and/or configured to end the contention. make sure that the buffer is maintained then delay
                                         //for a bit before checking again if we didn't waste time dequeuing
 
-                                        KeyValuePair<DateTime, string> out_val;
-
-                                        if (pending_log_entries.Count() > options.BlockingOptions.InBlockRetentionLimit)
+                                        if (pending_log_entries.Count() > options.ContentionOptions.InBlockRetentionLimit)
                                         {
-                                            while (pending_log_entries.Count() > options.BlockingOptions.InBlockRetentionLimit)
+                                            KeyValuePair<DateTime, string> out_val;
+                                            while (pending_log_entries.Count() > options.ContentionOptions.InBlockRetentionLimit)
+                                            {
                                                 pending_log_entries.TryDequeue(out out_val);
+                                                Console.WriteLine(out_val.Value + " " + pending_log_entries.Count());
+                                            }
+                                                
                                         }
                                         else
                                             await Task.Delay(1);
                                     }
+
                                 }
                                 else
                                     break;
@@ -214,11 +224,17 @@ namespace GlobalUtilities
                         {
                             using (StreamReader log_reader = new StreamReader(log_stream))
                             {
-                                //start by reading all of the lines into an array
+                                //start by reading all of the lines into an array if there's a retention limit
                                 List<string> log_lines = new List<string>();
-                                string log_line;
-                                while ((log_line = await log_reader.ReadLineAsync()) != null)
-                                    log_lines.Add(log_line);
+
+                                if(options.RetentionOptions.EnforceRetentionLimit)
+                                {
+                                    string log_line;
+                                    while ((log_line = await log_reader.ReadLineAsync()) != null)
+                                        log_lines.Add(log_line);
+                                }
+
+                                int last_write_size = 0;
 
                                 //start the writer loop
                                 while (log_writer_active)
@@ -233,7 +249,7 @@ namespace GlobalUtilities
                                         while (pending_log_entries.TryDequeue(out ret))
                                             pending_entries_dump.Add(ret);
 
-                                        log_lines.AddRange(pending_entries_dump.Select(x => "[" + x.Key.ToString() + "] " + x.Value));
+                                        log_lines.AddRange(pending_entries_dump.AsParallel().AsOrdered().Select(x => "[" + x.Key.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + "] " + x.Value));
                                         //
 
                                         //check to see if a cull is needed
@@ -242,7 +258,7 @@ namespace GlobalUtilities
                                             //cull the log lines
 
                                             var log_lines_end_cull = log_lines.Count() - options.RetentionOptions.RetainNumLogEntries;
-                                            log_lines = log_lines.Where((x, y) => y >= log_lines_end_cull+options.PerformanceOptions.OnCullDropBackNum).ToList();
+                                            log_lines = log_lines.Where((x, i) => i >= log_lines_end_cull+options.PerformanceOptions.OnCullDropBackNum).ToList();
                                         }
 
                                         //write the log lines to a memorystream to get a byte array, set the new file size, and then write and flush
@@ -258,12 +274,18 @@ namespace GlobalUtilities
 
                                             var bytes = ms.ToArray();
 
-                                            log_stream.SetLength(bytes.Length);
-                                            log_stream.Position = 0;
-                                            
+                                            //set the new position based on the retention settings
+                                            log_stream.Position = options.RetentionOptions.EnforceRetentionLimit ? 0 : log_stream.Length;
+
+                                            //set the new length based on the retention settings
+                                            log_stream.SetLength(options.RetentionOptions.EnforceRetentionLimit ? bytes.Length : log_stream.Length+bytes.LongLength);
+
                                             await log_stream.WriteAsync(bytes, 0, bytes.Length);
                                             await log_stream.FlushAsync();
-                                        } 
+
+                                            last_write_size = bytes.Length;
+                                        }
+                                        
                                     }
                                     else
                                         await Task.Delay(1);
@@ -278,6 +300,8 @@ namespace GlobalUtilities
                         //an exception occured. just loop back around and restart
                     }
                 }
+
+                log_writer_complete = true;
             });
         }
 
@@ -288,8 +312,9 @@ namespace GlobalUtilities
 
         public async Task AppendLogAsync(DateTime timestamp, string line)
         {
-            while (pending_log_entries.Count() > options.PerformanceOptions.BlockCallerAtBufferLimit)
-                await Task.Delay(1);
+            if(options.PerformanceOptions.EnableBlockCallerAtBufferLimit)
+                while (pending_log_entries.Count() > options.PerformanceOptions.BlockCallerAtBufferLimit)
+                    await Task.Delay(1);
 
             pending_log_entries.Enqueue(new KeyValuePair<DateTime, string>(timestamp, line));
         }
@@ -301,8 +326,9 @@ namespace GlobalUtilities
 
         public void AppendLog(DateTime timestamp, string line)
         {
-            while (pending_log_entries.Count() > options.PerformanceOptions.BlockCallerAtBufferLimit)
-                Thread.Sleep(1);
+            if (options.PerformanceOptions.EnableBlockCallerAtBufferLimit)
+                while (pending_log_entries.Count() > options.PerformanceOptions.BlockCallerAtBufferLimit)
+                    Thread.Sleep(1);
 
             pending_log_entries.Enqueue(new KeyValuePair<DateTime, string>(timestamp, line));
         }
