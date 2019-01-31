@@ -125,7 +125,7 @@ namespace GlobalUtilities
 
         public void Start()
         {
-            if (!log_writer_active)
+            if (log_writer_active)
                 throw new Exception("The logger has already been started.");
 
             lock (task_locker)
@@ -138,7 +138,7 @@ namespace GlobalUtilities
 
         public void Stop()
         {
-            if (log_writer_active && !log_writer_complete)
+            if (!log_writer_active && log_writer_complete)
                 throw new Exception("The logger hasn't been started.");
 
             lock (task_locker)
