@@ -261,8 +261,9 @@ namespace GlobalUtilities
                                         {
                                             //cull the log lines
 
-                                            var log_lines_end_cull = log_lines.Count() - options.RetentionOptions.RetainNumLogEntries;
-                                            log_lines = log_lines.Where((x, i) => i >= log_lines_end_cull+options.PerformanceOptions.OnCullDropBackNum).ToList();
+                                            var log_lines_end_cull = (log_lines.Count() - options.RetentionOptions.RetainNumLogEntries) + options.PerformanceOptions.OnCullDropBackNum;
+                                            //log_lines = log_lines.Where((x, i) => i >= log_lines_end_cull).ToList(); //I think this is slower
+                                            log_lines = log_lines.GetRange((int)log_lines_end_cull, log_lines.Count() - (int)log_lines_end_cull);
                                         }
 
                                         //write the log lines to a memorystream to get a byte array, set the new file size, and then write and flush
