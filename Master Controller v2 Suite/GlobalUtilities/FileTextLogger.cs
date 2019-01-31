@@ -248,6 +248,10 @@ namespace GlobalUtilities
                                         KeyValuePair<DateTime, string> ret;
                                         while (pending_log_entries.TryDequeue(out ret))
                                             pending_entries_dump.Add(ret);
+                                        
+                                        //if there is no retention limit clear the array
+                                        if(!options.RetentionOptions.EnforceRetentionLimit)
+                                            log_lines.Clear();
 
                                         log_lines.AddRange(pending_entries_dump.AsParallel().AsOrdered().Select(x => "[" + x.Key.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + "] " + x.Value));
                                         //
