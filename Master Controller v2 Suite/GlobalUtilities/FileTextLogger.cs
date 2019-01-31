@@ -112,8 +112,6 @@ namespace GlobalUtilities
         private Task log_writer_task = null;
         private bool log_writer_active = false;
 
-        private uint in_block_retention_limit = 10000;
-
         public FileTextLogger(LoggerOptions logging_options = null, bool autostart = true)
         {
             if (logging_options == null || logging_options.BaseOptions.LogName == null || logging_options.BaseOptions.LogName.Trim() == "" || logging_options.RetentionOptions.RetainNumLogEntries == 0)
@@ -176,7 +174,7 @@ namespace GlobalUtilities
                                     if (options.BlockingOptions.KillBlockingProcess && (DateTime.Now - start_time >= TimeSpan.FromMilliseconds(options.BlockingOptions.OnBlockWaitMs)))
                                     {
                                         //try to end the contention
-
+                                        
                                         KillBlockingProcesses(new string[] { options.BaseOptions.LogPath });
 
                                         break;
@@ -196,7 +194,6 @@ namespace GlobalUtilities
                                         else
                                             await Task.Delay(1);
                                     }
-
                                 }
                                 else
                                     break;
@@ -261,8 +258,7 @@ namespace GlobalUtilities
                                             
                                             await log_stream.WriteAsync(bytes, 0, bytes.Length);
                                             await log_stream.FlushAsync();
-                                        }
-                                        
+                                        } 
                                     }
                                     else
                                         await Task.Delay(1);
