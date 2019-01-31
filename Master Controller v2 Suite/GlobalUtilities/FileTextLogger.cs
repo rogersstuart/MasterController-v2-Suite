@@ -66,17 +66,13 @@ namespace GlobalUtilities
 
     public class LoggerRetentionOptions
     {
-        public uint BlockCallerAtBufferLimit { get; set; }
         public bool EnforceRetentionLimit { get; set; }
         public uint RetainNumLogEntries { get; set; }
-        public uint OnCullDropBackNum { get; set; }
-
-        public LoggerRetentionOptions(uint block_caller_at_buffer_limit = 10000, bool enforce_retention_limit = true, uint retain_num_log_entries = 1000000, uint on_cull_drop_back_num = 100)
+        
+        public LoggerRetentionOptions(bool enforce_retention_limit = true, uint retain_num_log_entries = 1000000)
         {
-            BlockCallerAtBufferLimit = block_caller_at_buffer_limit;
             EnforceRetentionLimit = enforce_retention_limit;
             RetainNumLogEntries = retain_num_log_entries;
-            OnCullDropBackNum = on_cull_drop_back_num;
         }
     }
 
@@ -84,20 +80,24 @@ namespace GlobalUtilities
     {
         public bool KillBlockingProcess { get; set; }
         public uint OnBlockWaitMs { get; set; }
+        public uint InBlockRetentionLimit { get; set; }
 
-        public LoggerBlockingOptions(bool kill_blocking_process = true, uint on_block_wait_ms = 60000)
+        public LoggerBlockingOptions(bool kill_blocking_process = true, uint on_block_wait_ms = 60000, uint in_block_retention_limit = 10000)
         {
             KillBlockingProcess = kill_blocking_process;
             OnBlockWaitMs = on_block_wait_ms;
+            InBlockRetentionLimit = in_block_retention_limit;
         }
     }
     
     public class LoggerPerformanceOptions
     {
+        public uint OnCullDropBackNum { get; set; }
         public uint BlockCallerAtBufferLimit { get; set; }
 
-        public LoggerPerformanceOptions(uint block_caller_at_buffer_limit = 10000)
+        public LoggerPerformanceOptions(uint on_cull_drop_back_num = 100, uint block_caller_at_buffer_limit = 10000)
         {
+            OnCullDropBackNum = on_cull_drop_back_num;
             BlockCallerAtBufferLimit = block_caller_at_buffer_limit;
         }
     }
@@ -188,9 +188,9 @@ namespace GlobalUtilities
 
                                         KeyValuePair<DateTime, string> out_val;
 
-                                        if (pending_log_entries.Count() > in_block_retention_limit)
+                                        if (pending_log_entries.Count() > options.BlockingOptions.InBlockRetentionLimit)
                                         {
-                                            while (pending_log_entries.Count() > in_block_retention_limit)
+                                            while (pending_log_entries.Count() > options.BlockingOptions.InBlockRetentionLimit)
                                                 pending_log_entries.TryDequeue(out out_val);
                                         }
                                         else
@@ -240,7 +240,7 @@ namespace GlobalUtilities
                                             //cull the log lines
 
                                             var log_lines_end_cull = log_lines.Count() - options.RetentionOptions.RetainNumLogEntries;
-                                            log_lines = log_lines.Where((x, y) => y >= log_lines_end_cull+options.RetentionOptions.OnCullDropBackNum).ToList();
+                                            log_lines = log_lines.Where((x, y) => y >= log_lines_end_cull+options.PerformanceOptions.OnCullDropBackNum).ToList();
                                         }
 
                                         //write the log lines to a memorystream to get a byte array, set the new file size, and then write and flush
