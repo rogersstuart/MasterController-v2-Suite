@@ -87,7 +87,7 @@ namespace GlobalUtilities
 
     public class FileTextLogger
     {
-        public LoggerOptions options = null;
+        private LoggerOptions options = null;
 
         private ConcurrentQueue<KeyValuePair<DateTime, string>> pending_log_entries = new ConcurrentQueue<KeyValuePair<DateTime, string>>();
 
@@ -110,16 +110,28 @@ namespace GlobalUtilities
 
         public void Start()
         {
-            lock(task_locker)
+            if (!log_writer_active)
+                throw new Exception("The logger has already been started.");
+
+            lock (task_locker)
             {
                 log_writer_task = GenerateLogWriterTask();
+                log_writer_complete = false;
                 log_writer_task.Start();
             }
         }
 
         public void Stop()
         {
+            if (log_writer_active && !log_writer_complete)
+                throw new Exception("The logger hasn't been started.");
 
+            lock (task_locker)
+            {
+                log_writer_active = false;
+                while (!log_writer_complete)
+                    Thread.Sleep(1);
+            }
         }
 
         private Task GenerateLogWriterTask()
