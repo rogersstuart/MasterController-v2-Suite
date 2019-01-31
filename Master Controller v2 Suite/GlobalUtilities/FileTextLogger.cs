@@ -122,6 +122,11 @@ namespace GlobalUtilities
             if (autostart)
                 Start();
         }
+        
+        public LoggerOptions LoggingOptions
+        {
+            get { return options; }
+        }
 
         public void Start()
         {
