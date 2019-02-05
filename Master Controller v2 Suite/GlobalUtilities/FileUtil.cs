@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace GlobalUtilities
 {
-    static public class FileUtil
+    public static class FileUtil
     {
         [StructLayout(LayoutKind.Sequential)]
         struct RM_UNIQUE_PROCESS
@@ -82,7 +82,7 @@ namespace GlobalUtilities
         /// http://wyupdate.googlecode.com/svn-history/r401/trunk/frmFilesInUse.cs (no copyright in code at time of viewing)
         /// 
         /// </remarks>
-        static public List<Process> WhoIsLocking(string path)
+        public static List<Process> WhoIsLocking(string path)
         {
             uint handle;
             string key = Guid.NewGuid().ToString();
@@ -149,6 +149,16 @@ namespace GlobalUtilities
             }
 
             return processes;
+        }
+
+        //should be using RuntimeInformation.IsOSPlatform
+        public static bool IsWindows
+        {
+            get
+            {
+                int p = (int)Environment.OSVersion.Platform;
+                return !((p == 4) || (p == 6) || (p == 128));
+            }
         }
     }
 }

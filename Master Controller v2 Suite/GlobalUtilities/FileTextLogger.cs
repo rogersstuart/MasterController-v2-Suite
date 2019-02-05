@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -10,147 +10,6 @@ using System.Threading;
 
 namespace GlobalUtilities
 {
-    public class LoggerOptions
-    {
-        public LoggerBaseOptions BaseOptions { get; set; }
-        public LoggerLoggingOptions LoggingOptions { get; set; }
-        public LoggerRetentionOptions RetentionOptions { get; set; }
-        public LoggerContentionOptions ContentionOptions { get; set; }
-        public LoggerPerformanceOptions PerformanceOptions { get; set; }
-
-        public LoggerOptions(LoggerBaseOptions base_options = null, LoggerLoggingOptions logging_options = null, LoggerRetentionOptions retention_options = null, LoggerContentionOptions contention_options = null,
-            LoggerPerformanceOptions performance_options = null)
-        {
-            if (base_options != null)
-                BaseOptions = base_options;
-            else
-                BaseOptions = new LoggerBaseOptions();
-
-            if (logging_options != null)
-                LoggingOptions = logging_options;
-            else
-                LoggingOptions = new LoggerLoggingOptions();
-
-            if (retention_options != null)
-                RetentionOptions = retention_options;
-            else
-                RetentionOptions = new LoggerRetentionOptions();
-
-            if (contention_options != null)
-                ContentionOptions = contention_options;
-            else
-                ContentionOptions = new LoggerContentionOptions();
-
-            if (performance_options != null)
-                PerformanceOptions = performance_options;
-            else
-                PerformanceOptions = new LoggerPerformanceOptions();
-        }
-    }
-
-    public class LoggerBaseOptions
-    {
-        public string LogName { get; set; }
-        public uint WriteInterval { get; set; }
-
-        public LoggerBaseOptions(string log_name = "log", uint write_interval = 500)
-        {
-            LogName = log_name;
-            WriteInterval = write_interval;
-        }
-
-        public string LogPath
-        {
-            get
-            {
-                return System.AppDomain.CurrentDomain.BaseDirectory + LogName + ".txt";
-            }
-        }
-    }
-
-    public class LoggerRetentionOptions
-    {
-        public bool EnforceRetentionLimit { get; set; }
-        public uint RetainNumLogEntries { get; set; }
-        
-        public LoggerRetentionOptions(bool enforce_retention_limit = true, uint retain_num_log_entries = 1000000)
-        {
-            EnforceRetentionLimit = enforce_retention_limit;
-            RetainNumLogEntries = retain_num_log_entries;
-        }
-    }
-
-    public class LoggerContentionOptions
-    {
-        private bool _kill_blocking_process;
-        public bool KillBlockingProcess
-        {
-            get
-            {
-                if (is_windows)
-                    return _kill_blocking_process;
-                else
-                    return false;
-            }
-            set { _kill_blocking_process = value; }
-        }
-        public uint OnBlockWaitMs { get; set; }
-        public bool EnableInBlockRetentionLimit { get; set; }
-        public uint InBlockRetentionLimit { get; set; }
-
-        private bool is_windows = IsWindows;
-
-        public LoggerContentionOptions(bool kill_blocking_process = true, uint on_block_wait_ms = 60000, bool enable_in_block_retention_limit = true, uint in_block_retention_limit = 10000)
-        {
-            KillBlockingProcess = kill_blocking_process;
-            OnBlockWaitMs = on_block_wait_ms;
-            EnableInBlockRetentionLimit = enable_in_block_retention_limit;
-            InBlockRetentionLimit = in_block_retention_limit;
-        }
-        
-        //should be using RuntimeInformation.IsOSPlatform
-        private static bool IsWindows
-        {
-            get
-            {
-                int p = (int)Environment.OSVersion.Platform;
-                return !((p == 4) || (p == 6) || (p == 128));
-            }
-        }
-    }
-
-    public class LoggerPerformanceOptions
-    {
-        public uint OnCullDropBackNum { get; set; }
-        public bool EnableBlockCallerAtBufferLimit { get; set; }
-        public uint BlockCallerAtBufferLimit { get; set; }
-        public bool EnableIngestionRateLimit { get; set; }
-        public uint IngestionRateLimit { get; set; }
-
-        public LoggerPerformanceOptions(uint on_cull_drop_back_num = 100, bool enable_block_caller_at_buffer_limit = true, uint block_caller_at_buffer_limit = 10000,
-            bool enable_ingestion_rate_limit = false, uint ingestion_rate_limit = 1)
-        {
-            OnCullDropBackNum = on_cull_drop_back_num;
-            EnableBlockCallerAtBufferLimit = enable_block_caller_at_buffer_limit;
-            BlockCallerAtBufferLimit = block_caller_at_buffer_limit;
-            EnableIngestionRateLimit = enable_ingestion_rate_limit;
-            IngestionRateLimit = ingestion_rate_limit;
-        }
-    }
-
-    public class LoggerLoggingOptions
-    {
-        public string TimeStampFormat { get; set; }
-
-        public LoggerLoggingOptions(string time_stamp_format = "MM/dd/yyyy hh:mm:ss.fff tt")
-        {
-            if (time_stamp_format != null && time_stamp_format.Trim() != "")
-                TimeStampFormat = time_stamp_format;
-            else
-                TimeStampFormat = "MM/dd/yyyy hh:mm:ss.fff tt";
-        }
-    }
-
     public class FileTextLogger : IDisposable
     {
         private LoggerOptions options = null;
@@ -179,7 +38,7 @@ namespace GlobalUtilities
             return timer;
         }))(ingestion_rate_limit_lock, ingestion_rate_limit_token);
         */
-        
+
 
         public FileTextLogger(LoggerOptions logging_options = null, bool autostart = true)
         {
@@ -245,45 +104,46 @@ namespace GlobalUtilities
                         //check for a block and try to resolve the situation if present
                         var start_time = DateTime.Now;
 
-                        while (log_writer_active)
-                        {
-                            try
+                        if(FileUtil.IsWindows) //if this isn't Windows just skip it for now and hope nothing bad happens
+                            while (log_writer_active)
                             {
-                                if (IsBlocked(new string[] { options.BaseOptions.LogPath }))
+                                try
                                 {
-                                    if (options.ContentionOptions.KillBlockingProcess && (DateTime.Now - start_time >= TimeSpan.FromMilliseconds(options.ContentionOptions.OnBlockWaitMs)))
+                                    if (IsBlocked(new string[] { options.BaseOptions.LogPath }))
                                     {
-                                        //try to end the contention
-
-                                        KillBlockingProcesses(new string[] { options.BaseOptions.LogPath });
-
-                                        break;
-                                    }
-                                    else
-                                    {
-                                        //we're blocked but not ready and/or configured to end the contention. make sure that the buffer is maintained then delay
-                                        //for a bit before checking again if we didn't waste time dequeuing
-
-                                        if (pending_log_entries.Count() > options.ContentionOptions.InBlockRetentionLimit)
+                                        if (options.ContentionOptions.KillBlockingProcess && (DateTime.Now - start_time >= TimeSpan.FromMilliseconds(options.ContentionOptions.OnBlockWaitMs)))
                                         {
-                                            KeyValuePair<DateTime, string> out_val;
-                                            while (pending_log_entries.Count() > options.ContentionOptions.InBlockRetentionLimit)
-                                            {
-                                                pending_log_entries.TryDequeue(out out_val);
-                                                Console.WriteLine(out_val.Value + " " + pending_log_entries.Count());
-                                            }
-                                                
+                                            //try to end the contention
+
+                                            KillBlockingProcesses(new string[] { options.BaseOptions.LogPath });
+
+                                            break;
                                         }
                                         else
-                                            await Task.Delay(1);
-                                    }
+                                        {
+                                            //we're blocked but not ready and/or configured to end the contention. make sure that the buffer is maintained then delay
+                                            //for a bit before checking again if we didn't waste time dequeuing
 
+                                            if (pending_log_entries.Count() > options.ContentionOptions.InBlockRetentionLimit)
+                                            {
+                                                KeyValuePair<DateTime, string> out_val;
+                                                while (pending_log_entries.Count() > options.ContentionOptions.InBlockRetentionLimit)
+                                                {
+                                                    pending_log_entries.TryDequeue(out out_val);
+                                                    Console.WriteLine(out_val.Value + " " + pending_log_entries.Count());
+                                                }
+
+                                            }
+                                            else
+                                                await Task.Delay(1);
+                                        }
+
+                                    }
+                                    else
+                                        break;
                                 }
-                                else
-                                    break;
+                                catch (Exception ex) { }
                             }
-                            catch (Exception ex) { }
-                        }
 
                         if (!log_writer_active)
                             break;
@@ -296,7 +156,7 @@ namespace GlobalUtilities
                                 //start by reading all of the lines into an array if there's a retention limit
                                 List<string> log_lines = new List<string>();
 
-                                if(options.RetentionOptions.EnforceRetentionLimit)
+                                if (options.RetentionOptions.EnforceRetentionLimit)
                                 {
                                     string log_line;
                                     while ((log_line = await log_reader.ReadLineAsync()) != null)
@@ -310,7 +170,7 @@ namespace GlobalUtilities
                                     if ((DateTime.Now - last_check >= TimeSpan.FromMilliseconds(options.BaseOptions.WriteInterval)) && !pending_log_entries.IsEmpty)
                                     {
                                         last_check = DateTime.Now;
-                                        
+
                                         //pull the records from the buffer, convert them to lines, and add them to the tracking array
                                         List<KeyValuePair<DateTime, string>> pending_entries_dump = new List<KeyValuePair<DateTime, string>>();
 
@@ -361,7 +221,7 @@ namespace GlobalUtilities
                                             await log_stream.FlushAsync();
 
                                             Console.WriteLine("wrote " + bytes.Length + " bytes");
-                                        }  
+                                        }
                                     }
                                     else
                                         await Task.Delay(1);
@@ -374,7 +234,7 @@ namespace GlobalUtilities
                             }
                         }
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         //an exception occured. just loop back around and restart
 
@@ -419,7 +279,7 @@ namespace GlobalUtilities
 
         public void AppendLog(DateTime timestamp, string line)
         {
-            
+
             if (options.PerformanceOptions.EnableBlockCallerAtBufferLimit)
                 while (pending_log_entries.Count() > options.PerformanceOptions.BlockCallerAtBufferLimit)
                     Thread.Sleep(1);
