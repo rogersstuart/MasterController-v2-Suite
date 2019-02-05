@@ -286,6 +286,8 @@ namespace GlobalUtilities
                                     //check to see if we should pull lines from the buffer and write them to file
                                     if ((DateTime.Now - last_check >= TimeSpan.FromMilliseconds(options.BaseOptions.WriteInterval)) && !pending_log_entries.IsEmpty)
                                     {
+                                        last_check = DateTime.Now;
+                                        
                                         //pull the records from the buffer, convert them to lines, and add them to the tracking array
                                         List<KeyValuePair<DateTime, string>> pending_entries_dump = new List<KeyValuePair<DateTime, string>>();
 
