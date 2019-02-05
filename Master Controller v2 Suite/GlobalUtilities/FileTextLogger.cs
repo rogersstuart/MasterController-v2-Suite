@@ -82,10 +82,22 @@ namespace GlobalUtilities
 
     public class LoggerContentionOptions
     {
-        public bool KillBlockingProcess { get; set; }
+        public bool KillBlockingProcess
+        {
+            get
+            {
+                if (is_linux)
+                    return false;
+                else
+                    return KillBlockingProcess;
+            }
+            set { KillBlockingProcess = value; }
+        }
         public uint OnBlockWaitMs { get; set; }
         public bool EnableInBlockRetentionLimit { get; set; }
         public uint InBlockRetentionLimit { get; set; }
+
+        private bool is_linux = IsLinux;
 
         public LoggerContentionOptions(bool kill_blocking_process = true, uint on_block_wait_ms = 60000, bool enable_in_block_retention_limit = true, uint in_block_retention_limit = 10000)
         {
@@ -93,6 +105,15 @@ namespace GlobalUtilities
             OnBlockWaitMs = on_block_wait_ms;
             EnableInBlockRetentionLimit = enable_in_block_retention_limit;
             InBlockRetentionLimit = in_block_retention_limit;
+        }
+
+        private static bool IsLinux
+        {
+            get
+            {
+                int p = (int)Environment.OSVersion.Platform;
+                return (p == 4) || (p == 6) || (p == 128);
+            }
         }
     }
 
