@@ -13,17 +13,23 @@ namespace GlobalUtilities
     public class LoggerOptions
     {
         public LoggerBaseOptions BaseOptions { get; set; }
+        public LoggerLoggingOptions LoggingOptions { get; set; }
         public LoggerRetentionOptions RetentionOptions { get; set; }
         public LoggerContentionOptions ContentionOptions { get; set; }
         public LoggerPerformanceOptions PerformanceOptions { get; set; }
 
-        public LoggerOptions(LoggerBaseOptions base_options = null, LoggerRetentionOptions retention_options = null, LoggerContentionOptions contention_options = null,
+        public LoggerOptions(LoggerBaseOptions base_options = null, LoggerLoggingOptions logging_options = null, LoggerRetentionOptions retention_options = null, LoggerContentionOptions contention_options = null,
             LoggerPerformanceOptions performance_options = null)
         {
             if (base_options != null)
                 BaseOptions = base_options;
             else
                 BaseOptions = new LoggerBaseOptions();
+
+            if (logging_options != null)
+                LoggingOptions = logging_options;
+            else
+                LoggingOptions = new LoggerLoggingOptions();
 
             if (retention_options != null)
                 RetentionOptions = retention_options;
@@ -47,9 +53,7 @@ namespace GlobalUtilities
         public string LogName { get; set; }
         public uint WriteInterval { get; set; }
 
-        private readonly string base_path = System.AppDomain.CurrentDomain.BaseDirectory;
-
-        public LoggerBaseOptions(string log_name = "log", uint write_interval = 1000)
+        public LoggerBaseOptions(string log_name = "log", uint write_interval = 500)
         {
             LogName = log_name;
             WriteInterval = write_interval;
@@ -59,7 +63,7 @@ namespace GlobalUtilities
         {
             get
             {
-                return base_path + LogName + ".txt";
+                return System.AppDomain.CurrentDomain.BaseDirectory + LogName + ".txt";
             }
         }
     }
@@ -80,12 +84,14 @@ namespace GlobalUtilities
     {
         public bool KillBlockingProcess { get; set; }
         public uint OnBlockWaitMs { get; set; }
+        public bool EnableInBlockRetentionLimit { get; set; }
         public uint InBlockRetentionLimit { get; set; }
 
-        public LoggerContentionOptions(bool kill_blocking_process = true, uint on_block_wait_ms = 60000, uint in_block_retention_limit = 10000)
+        public LoggerContentionOptions(bool kill_blocking_process = true, uint on_block_wait_ms = 60000, bool enable_in_block_retention_limit = true, uint in_block_retention_limit = 10000)
         {
             KillBlockingProcess = kill_blocking_process;
             OnBlockWaitMs = on_block_wait_ms;
+            EnableInBlockRetentionLimit = enable_in_block_retention_limit;
             InBlockRetentionLimit = in_block_retention_limit;
         }
     }
@@ -95,19 +101,34 @@ namespace GlobalUtilities
         public uint OnCullDropBackNum { get; set; }
         public bool EnableBlockCallerAtBufferLimit { get; set; }
         public uint BlockCallerAtBufferLimit { get; set; }
-        public bool EnableDiffWriting { get; set; }
+        public bool EnableIngestionRateLimit { get; set; }
+        public uint IngestionRateLimit { get; set; }
 
         public LoggerPerformanceOptions(uint on_cull_drop_back_num = 100, bool enable_block_caller_at_buffer_limit = true, uint block_caller_at_buffer_limit = 10000,
-            bool enable_diff_writing = true)
+            bool enable_ingestion_rate_limit = false, uint ingestion_rate_limit = 1)
         {
             OnCullDropBackNum = on_cull_drop_back_num;
             EnableBlockCallerAtBufferLimit = enable_block_caller_at_buffer_limit;
             BlockCallerAtBufferLimit = block_caller_at_buffer_limit;
-            EnableDiffWriting = enable_diff_writing;
+            EnableIngestionRateLimit = enable_ingestion_rate_limit;
+            IngestionRateLimit = ingestion_rate_limit;
         }
     }
 
-    public class FileTextLogger
+    public class LoggerLoggingOptions
+    {
+        public string TimeStampFormat { get; set; }
+
+        public LoggerLoggingOptions(string time_stamp_format = "MM/dd/yyyy hh:mm:ss.fff tt")
+        {
+            if (time_stamp_format != null && time_stamp_format.Trim() != "")
+                TimeStampFormat = time_stamp_format;
+            else
+                TimeStampFormat = "MM/dd/yyyy hh:mm:ss.fff tt";
+        }
+    }
+
+    public class FileTextLogger : IDisposable
     {
         private LoggerOptions options = null;
 
@@ -117,6 +138,25 @@ namespace GlobalUtilities
         private Task log_writer_task = null;
         private bool log_writer_active = false;
         private bool log_writer_complete = false;
+
+        private Object ingestion_rate_limit_lock = new Object();
+        private Boolean ingestion_rate_limit_token = false;
+
+        /*
+        private System.Timers.Timer rate_limiter_timer = ((Func<Object, Boolean, System.Timers.Timer>)((lock_var, token_var) =>
+        {
+            var timer = new System.Timers.Timer();
+
+            timer.Elapsed += (a,b) =>
+            {
+                lock (lock_var)
+                    token_var = true;
+            };
+
+            return timer;
+        }))(ingestion_rate_limit_lock, ingestion_rate_limit_token);
+        */
+        
 
         public FileTextLogger(LoggerOptions logging_options = null, bool autostart = true)
         {
@@ -168,11 +208,17 @@ namespace GlobalUtilities
 
                 var last_check = DateTime.MinValue;
 
+                //tracking var
+                bool first_run = true;
+
                 //enter log writer loop
                 while (log_writer_active)
                 {
                     try
                     {
+                        //for those times when everything is going wrong
+                        await Task.Delay(1);
+
                         //check for a block and try to resolve the situation if present
                         var start_time = DateTime.Now;
 
@@ -234,8 +280,6 @@ namespace GlobalUtilities
                                         log_lines.Add(log_line);
                                 }
 
-                                int last_write_size = 0;
-
                                 //start the writer loop
                                 while (log_writer_active)
                                 {
@@ -248,30 +292,33 @@ namespace GlobalUtilities
                                         KeyValuePair<DateTime, string> ret;
                                         while (pending_log_entries.TryDequeue(out ret))
                                             pending_entries_dump.Add(ret);
-                                        
-                                        //if there is no retention limit clear the array
-                                        if(!options.RetentionOptions.EnforceRetentionLimit)
-                                            log_lines.Clear();
 
-                                        log_lines.AddRange(pending_entries_dump.AsParallel().AsOrdered().Select(x => "[" + x.Key.ToString("MM/dd/yyyy hh:mm:ss.fff tt") + "] " + x.Value));
+                                        var new_lines = pending_entries_dump.AsParallel().AsOrdered().Select(x => "[" + x.Key.ToString(options.LoggingOptions.TimeStampFormat) + "] " + x.Value).ToList();
+
+                                        //only use the log lines list if there's a retention limit
+                                        if (options.RetentionOptions.EnforceRetentionLimit)
+                                            log_lines.AddRange(new_lines);
                                         //
 
                                         //check to see if a cull is needed
+                                        bool cull_occured = false;
                                         if (options.RetentionOptions.EnforceRetentionLimit && log_lines.Count() > options.RetentionOptions.RetainNumLogEntries)
                                         {
-                                            //cull the log lines
+                                            //a cull is needed so do it
 
                                             var log_lines_end_cull = (log_lines.Count() - options.RetentionOptions.RetainNumLogEntries) + options.PerformanceOptions.OnCullDropBackNum;
                                             //log_lines = log_lines.Where((x, i) => i >= log_lines_end_cull).ToList(); //I think this is slower
                                             log_lines = log_lines.GetRange((int)log_lines_end_cull, log_lines.Count() - (int)log_lines_end_cull);
+
+                                            cull_occured = true;
                                         }
 
-                                        //write the log lines to a memorystream to get a byte array, set the new file size, and then write and flush
+                                        //write the log lines to a memorystream to get a byte array, set the new file size, then write and flush
                                         using (MemoryStream ms = new MemoryStream())
                                         {
                                             using (StreamWriter sw = new StreamWriter(ms))
                                             {
-                                                foreach (var line in log_lines)
+                                                foreach (var line in (options.RetentionOptions.EnforceRetentionLimit ? (cull_occured || first_run ? log_lines : new_lines) : new_lines))
                                                     await sw.WriteLineAsync(line);
 
                                                 await sw.FlushAsync();
@@ -280,20 +327,22 @@ namespace GlobalUtilities
                                             var bytes = ms.ToArray();
 
                                             //set the new position based on the retention settings
-                                            log_stream.Position = options.RetentionOptions.EnforceRetentionLimit ? 0 : log_stream.Length;
+                                            log_stream.Position = options.RetentionOptions.EnforceRetentionLimit ? (cull_occured || first_run ? 0 : log_stream.Length) : log_stream.Length;
 
                                             //set the new length based on the retention settings
-                                            log_stream.SetLength(options.RetentionOptions.EnforceRetentionLimit ? bytes.Length : log_stream.Length+bytes.LongLength);
+                                            log_stream.SetLength(options.RetentionOptions.EnforceRetentionLimit ? (cull_occured || first_run ? bytes.LongLength : log_stream.Length + bytes.LongLength) : log_stream.Length + bytes.LongLength);
 
                                             await log_stream.WriteAsync(bytes, 0, bytes.Length);
                                             await log_stream.FlushAsync();
 
-                                            last_write_size = bytes.Length;
-                                        }
-                                        
+                                            Console.WriteLine("wrote " + bytes.Length + " bytes");
+                                        }  
                                     }
                                     else
                                         await Task.Delay(1);
+
+                                    //set tracking var
+                                    first_run = false;
                                 }
 
                                 break;
@@ -303,6 +352,9 @@ namespace GlobalUtilities
                     catch(Exception ex)
                     {
                         //an exception occured. just loop back around and restart
+
+                        //reset tracking var
+                        first_run = true;
                     }
                 }
 
@@ -317,7 +369,18 @@ namespace GlobalUtilities
 
         public async Task AppendLogAsync(DateTime timestamp, string line)
         {
-            if(options.PerformanceOptions.EnableBlockCallerAtBufferLimit)
+            /*
+            if (options.PerformanceOptions.EnableIngestionRateLimit)
+            {
+                //try to take the token
+                lock(ingestion_rate_limit_lock)
+                {
+
+                }
+            }
+            */
+
+            if (options.PerformanceOptions.EnableBlockCallerAtBufferLimit)
                 while (pending_log_entries.Count() > options.PerformanceOptions.BlockCallerAtBufferLimit)
                     await Task.Delay(1);
 
@@ -331,6 +394,7 @@ namespace GlobalUtilities
 
         public void AppendLog(DateTime timestamp, string line)
         {
+            
             if (options.PerformanceOptions.EnableBlockCallerAtBufferLimit)
                 while (pending_log_entries.Count() > options.PerformanceOptions.BlockCallerAtBufferLimit)
                     Thread.Sleep(1);
@@ -359,6 +423,13 @@ namespace GlobalUtilities
             if (blocking_processes.Count() > 0)
                 foreach (Process p in blocking_processes)
                     p.Kill();
+        }
+
+        public void Dispose()
+        {
+            throw new NotImplementedException();
+
+            //if disposed while the log writer is active...
         }
     }
 }
