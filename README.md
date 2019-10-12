@@ -2,7 +2,7 @@
 This is very messy. :/
 
 The purpose of this software is to generate binary files and upload them to "offline controllers."
-In order to perform that action a program called the "Master Controller Interface" is used to add, manage, and delete card NUIDs and users
+In order to perform that function a program called the "Master Controller Interface" is used to add, manage, and delete card NUIDs and users
 stored in a MySQL database. In its current form it also exposes other firmware features which can be used to configure
 and maintain the system. It can set the RTC and control the "override" state of the door control outputs on the "offline controllers."
 In addition to that two monitor applications are integrated to control other devices. One of them is called the "expander."
