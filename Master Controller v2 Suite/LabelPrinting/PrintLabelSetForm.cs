@@ -9,8 +9,9 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO;
 using MCICommon;
+using UIElements;
 
-namespace MasterControllerInterface
+namespace LabelPrinting
 {
     public partial class PrintLabelSetForm : Form
     {

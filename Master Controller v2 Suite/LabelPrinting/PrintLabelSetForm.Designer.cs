@@ -1,4 +1,4 @@
-﻿namespace MasterControllerInterface
+﻿namespace LabelPrinting
 {
     partial class PrintLabelSetForm
     {

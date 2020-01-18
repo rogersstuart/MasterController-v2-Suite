@@ -18,6 +18,9 @@
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
     <TargetFrameworkProfile />
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <NuGetPackageImportStamp>
+    </NuGetPackageImportStamp>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -30,11 +33,8 @@
     <MapFileExtensions>true</MapFileExtensions>
     <ApplicationRevision>0</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -62,12 +62,6 @@
     <Reference Include="BouncyCastle.Crypto, Version=1.8.5.0, Culture=neutral, PublicKeyToken=0e99375e54769942">
       <HintPath>..\packages\BouncyCastle.1.8.5\lib\BouncyCastle.Crypto.dll</HintPath>
     </Reference>
-    <Reference Include="DYMO.Common">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\DYMO\DYMO Label Software\DYMO.Common.dll</HintPath>
-    </Reference>
-    <Reference Include="DYMO.Label.Framework, Version=1.0.0.0, Culture=neutral, PublicKeyToken=5426002a38745af9, processorArchitecture=MSIL">
-      <HintPath>..\..\..\..\..\..\..\..\Program Files (x86)\DYMO\DYMO Label Software\Framework\DYMO.Label.Framework.dll</HintPath>
-    </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.3.0\lib\net45\EntityFramework.dll</HintPath>
     </Reference>
@@ -85,10 +79,6 @@
     </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=0.86.0.518, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
       <HintPath>..\packages\SharpZipLib.0.86.0\lib\20\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
-    <Reference Include="Interop.Dymo">
-      <HintPath>..\..\..\..\..\..\Documents\DYMO Label v.8 SDK\DLS SDK\Samples\High Level COM\dotNET Samples\C# Sample\bin\Release\Interop.Dymo.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
     </Reference>
     <Reference Include="M2Mqtt.Net, Version=4.3.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\M2Mqtt.4.3.0.0\lib\net45\M2Mqtt.Net.dll</HintPath>
@@ -156,78 +146,75 @@
     <Reference Include="VelocityDb, Version=9.0.0.0, Culture=neutral, PublicKeyToken=f050dff7995aa24a, processorArchitecture=MSIL">
       <HintPath>..\packages\VelocityDB.9.0.0\lib\net45\VelocityDb.dll</HintPath>
     </Reference>
-    <Reference Include="Zen.Barcode.Core, Version=3.1.0.0, Culture=neutral, PublicKeyToken=b5ae55aa76d2d9de, processorArchitecture=MSIL">
-      <HintPath>..\packages\Zen.Barcode.Core.2.0.0\lib\net45\Zen.Barcode.Core.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AccessControlCard.cs" />
-    <Compile Include="ArchivalForm.cs">
+    <Compile Include="UIForms\ArchivalForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ArchivalForm.Designer.cs">
+    <Compile Include="UIForms\ArchivalForm.Designer.cs">
       <DependentUpon>ArchivalForm.cs</DependentUpon>
     </Compile>
     <Compile Include="AuditingTools.cs" />
-    <Compile Include="BackupManagerForm.cs">
+    <Compile Include="UIForms\BackupManagerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="BackupManagerForm.Designer.cs">
+    <Compile Include="UIForms\BackupManagerForm.Designer.cs">
       <DependentUpon>BackupManagerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="BinaryTranslator.cs" />
-    <Compile Include="CardManager.cs">
+    <Compile Include="UIForms\CardManager.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="CardManager.Designer.cs">
+    <Compile Include="UIForms\CardManager.Designer.cs">
       <DependentUpon>CardManager.cs</DependentUpon>
     </Compile>
-    <Compile Include="ConnectionPropertiesEditor.cs">
+    <Compile Include="UIForms\ConnectionPropertiesEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ConnectionPropertiesEditor.designer.cs">
+    <Compile Include="UIForms\ConnectionPropertiesEditor.designer.cs">
       <DependentUpon>ConnectionPropertiesEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="DatabaseConnectionEditor.cs">
+    <Compile Include="UIForms\DatabaseConnectionEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DatabaseConnectionEditor.Designer.cs">
+    <Compile Include="UIForms\DatabaseConnectionEditor.Designer.cs">
       <DependentUpon>DatabaseConnectionEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="DeviceSelectionForm.cs">
+    <Compile Include="UIForms\DeviceSelectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DeviceSelectionForm.Designer.cs">
+    <Compile Include="UIForms\DeviceSelectionForm.Designer.cs">
       <DependentUpon>DeviceSelectionForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GroupEditorForm.cs">
+    <Compile Include="UIForms\GroupEditorForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GroupEditorForm.Designer.cs">
+    <Compile Include="UIForms\GroupEditorForm.Designer.cs">
       <DependentUpon>GroupEditorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="GroupMergeForm.cs">
+    <Compile Include="UIForms\GroupMergeForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="GroupMergeForm.Designer.cs">
+    <Compile Include="UIForms\GroupMergeForm.Designer.cs">
       <DependentUpon>GroupMergeForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="HomeFloorsEditor.cs">
+    <Compile Include="UIForms\HomeFloorsEditor.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="HomeFloorsEditor.Designer.cs">
+    <Compile Include="UIForms\HomeFloorsEditor.Designer.cs">
       <DependentUpon>HomeFloorsEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="LogStepperForm.cs">
+    <Compile Include="UIForms\LogStepperForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LogStepperForm.Designer.cs">
+    <Compile Include="UIForms\LogStepperForm.Designer.cs">
       <DependentUpon>LogStepperForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="MCISyncConfigurationForm.cs">
+    <Compile Include="UIForms\MCISyncConfigurationForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MCISyncConfigurationForm.Designer.cs">
+    <Compile Include="UIForms\MCISyncConfigurationForm.Designer.cs">
       <DependentUpon>MCISyncConfigurationForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MCIv2Form\MCIv2Form.cs">
@@ -237,10 +224,10 @@
       <DependentUpon>MCIv2Form.cs</DependentUpon>
     </Compile>
     <Compile Include="DBBackupAndRestore.cs" />
-    <Compile Include="DeviceManagerForm.cs">
+    <Compile Include="UIForms\DeviceManagerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="DeviceManagerForm.Designer.cs">
+    <Compile Include="UIForms\DeviceManagerForm.Designer.cs">
       <DependentUpon>DeviceManagerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ErrorBox.cs">
@@ -249,32 +236,31 @@
     <Compile Include="ErrorBox.Designer.cs">
       <DependentUpon>ErrorBox.cs</DependentUpon>
     </Compile>
-    <Compile Include="ExportForm.cs">
+    <Compile Include="UIForms\ExportForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ExportForm.Designer.cs">
+    <Compile Include="UIForms\ExportForm.Designer.cs">
       <DependentUpon>ExportForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ImportForm.cs">
+    <Compile Include="UIForms\ImportForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ImportForm.Designer.cs">
+    <Compile Include="UIForms\ImportForm.Designer.cs">
       <DependentUpon>ImportForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="LabelPrinter.cs" />
     <Compile Include="ListCompiler.cs" />
     <Compile Include="ListMember.cs" />
-    <Compile Include="ListSelectionForm.cs">
+    <Compile Include="UIForms\ListSelectionForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ListSelectionForm.Designer.cs">
+    <Compile Include="UIForms\ListSelectionForm.Designer.cs">
       <DependentUpon>ListSelectionForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ListUploadException.cs" />
-    <Compile Include="LogImportForm.cs">
+    <Compile Include="UIForms\LogImportForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="LogImportForm.Designer.cs">
+    <Compile Include="UIForms\LogImportForm.Designer.cs">
       <DependentUpon>LogImportForm.cs</DependentUpon>
     </Compile>
     <Compile Include="ManagedStreamV2.cs" />
@@ -291,22 +277,22 @@
     <Compile Include="MCIv2User.cs" />
     <Compile Include="MCIv2UserCollection.cs" />
     <Compile Include="MCv2LogEntry.cs" />
-    <Compile Include="MQTTCardListGeneratorForm.cs">
+    <Compile Include="UIForms\MQTTCardListGeneratorForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="MQTTCardListGeneratorForm.Designer.cs">
+    <Compile Include="UIForms\MQTTCardListGeneratorForm.Designer.cs">
       <DependentUpon>MQTTCardListGeneratorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="NUIDEncodingTranslatorForm.cs">
+    <Compile Include="UIForms\NUIDEncodingTranslatorForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="NUIDEncodingTranslatorForm.Designer.cs">
+    <Compile Include="UIForms\NUIDEncodingTranslatorForm.Designer.cs">
       <DependentUpon>NUIDEncodingTranslatorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="OutputMonitorForm.cs">
+    <Compile Include="UIForms\OutputMonitorForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="OutputMonitorForm.Designer.cs">
+    <Compile Include="UIForms\OutputMonitorForm.Designer.cs">
       <DependentUpon>OutputMonitorForm.cs</DependentUpon>
     </Compile>
     <Compile Include="PanelCommand.cs" />
@@ -315,29 +301,17 @@
     <Compile Include="PanelEventArgs.cs" />
     <Compile Include="PanelMonitor.cs" />
     <Compile Include="PanelState.cs" />
-    <Compile Include="PeerDetailsForm.cs">
+    <Compile Include="UIForms\PeerDetailsForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="PeerDetailsForm.Designer.cs">
+    <Compile Include="UIForms\PeerDetailsForm.Designer.cs">
       <DependentUpon>PeerDetailsForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="PeerSyncDiscovery.cs" />
-    <Compile Include="PeerInfo.cs" />
-    <Compile Include="PeerSyncListener.cs" />
-    <Compile Include="PeerSyncStatus.cs" />
-    <Compile Include="PeerUtilities.cs" />
-    <Compile Include="PrintLabelSetForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="PrintLabelSetForm.Designer.cs">
-      <DependentUpon>PrintLabelSetForm.cs</DependentUpon>
-    </Compile>
-    <Compile Include="ProgressDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="ProgressDialog.Designer.cs">
-      <DependentUpon>ProgressDialog.cs</DependentUpon>
-    </Compile>
+    <Compile Include="Peer Functions\PeerSyncDiscovery.cs" />
+    <Compile Include="Peer Functions\PeerInfo.cs" />
+    <Compile Include="Peer Functions\PeerSyncListener.cs" />
+    <Compile Include="Peer Functions\PeerSyncStatus.cs" />
+    <Compile Include="Peer Functions\PeerUtilities.cs" />
     <Compile Include="ServiceManager.cs" />
     <Compile Include="SimpleDatabaseEditor.cs">
       <SubType>Form</SubType>
@@ -345,15 +319,15 @@
     <Compile Include="SimpleDatabaseEditor.designer.cs">
       <DependentUpon>SimpleDatabaseEditor.cs</DependentUpon>
     </Compile>
-    <Compile Include="PeerSyncAdvertiser.cs" />
+    <Compile Include="Peer Functions\PeerSyncAdvertiser.cs" />
     <Compile Include="TableManager.cs" />
     <Compile Include="TCPConnectionHistoryMenuItem.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="ListManagerForm.cs">
+    <Compile Include="UIForms\ListManagerForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ListManagerForm.Designer.cs">
+    <Compile Include="UIForms\ListManagerForm.Designer.cs">
       <DependentUpon>ListManagerForm.cs</DependentUpon>
     </Compile>
     <Compile Include="MasterControllerInterface.cs">
@@ -410,77 +384,71 @@
     <Compile Include="VelocityDBUtilities.cs" />
     <Compile Include="XLSXConverter.cs" />
     <Compile Include="ListUtilities.cs" />
-    <EmbeddedResource Include="BackupManagerForm.resx">
+    <EmbeddedResource Include="UIForms\BackupManagerForm.resx">
       <DependentUpon>BackupManagerForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="CardManager.resx">
+    <EmbeddedResource Include="UIForms\CardManager.resx">
       <DependentUpon>CardManager.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ConnectionPropertiesEditor.resx">
+    <EmbeddedResource Include="UIForms\ConnectionPropertiesEditor.resx">
       <DependentUpon>ConnectionPropertiesEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DatabaseConnectionEditor.resx">
+    <EmbeddedResource Include="UIForms\DatabaseConnectionEditor.resx">
       <DependentUpon>DatabaseConnectionEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DeviceSelectionForm.resx">
+    <EmbeddedResource Include="UIForms\DeviceSelectionForm.resx">
       <DependentUpon>DeviceSelectionForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GroupEditorForm.resx">
+    <EmbeddedResource Include="UIForms\GroupEditorForm.resx">
       <DependentUpon>GroupEditorForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="GroupMergeForm.resx">
+    <EmbeddedResource Include="UIForms\GroupMergeForm.resx">
       <DependentUpon>GroupMergeForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="HomeFloorsEditor.resx">
+    <EmbeddedResource Include="UIForms\HomeFloorsEditor.resx">
       <DependentUpon>HomeFloorsEditor.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MCISyncConfigurationForm.resx">
+    <EmbeddedResource Include="UIForms\MCISyncConfigurationForm.resx">
       <DependentUpon>MCISyncConfigurationForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MCIv2Form\MCIv2Form.resx">
       <DependentUpon>MCIv2Form.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="DeviceManagerForm.resx">
+    <EmbeddedResource Include="UIForms\DeviceManagerForm.resx">
       <DependentUpon>DeviceManagerForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="ErrorBox.resx">
       <DependentUpon>ErrorBox.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ExportForm.resx">
+    <EmbeddedResource Include="UIForms\ExportForm.resx">
       <DependentUpon>ExportForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ImportForm.resx">
+    <EmbeddedResource Include="UIForms\ImportForm.resx">
       <DependentUpon>ImportForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ListManagerForm.resx">
+    <EmbeddedResource Include="UIForms\ListManagerForm.resx">
       <DependentUpon>ListManagerForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ListSelectionForm.resx">
+    <EmbeddedResource Include="UIForms\ListSelectionForm.resx">
       <DependentUpon>ListSelectionForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="LogImportForm.resx">
+    <EmbeddedResource Include="UIForms\LogImportForm.resx">
       <DependentUpon>LogImportForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="MasterControllerInterface.resx">
       <DependentUpon>MasterControllerInterface.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="MQTTCardListGeneratorForm.resx">
+    <EmbeddedResource Include="UIForms\MQTTCardListGeneratorForm.resx">
       <DependentUpon>MQTTCardListGeneratorForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="NUIDEncodingTranslatorForm.resx">
+    <EmbeddedResource Include="UIForms\NUIDEncodingTranslatorForm.resx">
       <DependentUpon>NUIDEncodingTranslatorForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="OutputMonitorForm.resx">
+    <EmbeddedResource Include="UIForms\OutputMonitorForm.resx">
       <DependentUpon>OutputMonitorForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="PeerDetailsForm.resx">
+    <EmbeddedResource Include="UIForms\PeerDetailsForm.resx">
       <DependentUpon>PeerDetailsForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="PrintLabelSetForm.resx">
-      <DependentUpon>PrintLabelSetForm.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="ProgressDialog.resx">
-      <DependentUpon>ProgressDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <Generator>ResXFileCodeGenerator</Generator>
@@ -524,20 +492,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
-    <None Include="Text.label">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
-    <None Include="two_up.label">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="App.config">
       <SubType>Designer</SubType>
     </EmbeddedResource>
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="ICSharpCode.SharpZipLib.dll" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
@@ -547,9 +506,13 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\1stFloorDoors\DoorControl.csproj">
+    <ProjectReference Include="..\DoorControl\DoorControl.csproj">
       <Project>{44300865-8cb8-439e-8ce2-b570ede007bc}</Project>
       <Name>DoorControl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\LabelPrinting\LabelPrinting.csproj">
+      <Project>{7a2fac33-762a-478e-9715-a0cade87b2f2}</Project>
+      <Name>LabelPrinting</Name>
     </ProjectReference>
     <ProjectReference Include="..\MasterControllerDotNet_Server\MasterControllerDotNet_Server.csproj">
       <Project>{481cf166-4aef-4cf4-879f-c7d5831655b0}</Project>
@@ -558,6 +521,10 @@
     <ProjectReference Include="..\MCICommon\MCICommon.csproj">
       <Project>{4a875f38-cd7d-4286-8edb-c463da461ac7}</Project>
       <Name>MCICommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\UIElements\UIElements.csproj">
+      <Project>{24231b73-6ef4-4266-8713-7fe0273315fa}</Project>
+      <Name>UIElements</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

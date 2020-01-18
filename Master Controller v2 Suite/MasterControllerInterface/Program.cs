@@ -11,6 +11,7 @@ using System.IO;
 using System.IO.Ports;
 using System.Threading;
 using MCICommon;
+using UIElements;
 
 namespace MasterControllerInterface
 {

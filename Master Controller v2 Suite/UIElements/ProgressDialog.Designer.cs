@@ -1,4 +1,4 @@
-﻿namespace MasterControllerInterface
+﻿namespace UIElements
 {
     partial class ProgressDialog
     {

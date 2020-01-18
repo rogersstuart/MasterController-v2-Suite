@@ -7,15 +7,15 @@ using DYMO.Label.Framework;
 using Zen.Barcode;
 using System.IO;
 
-namespace MasterControllerInterface
+namespace LabelPrinting
 {
-    class LabelPrinter
+    public class LabelPrinter
     {
         ILabel label;
 
-        public LabelPrinter()
+        public LabelPrinter(string file_name = "two_up.label")
         {
-            label = Framework.Open("two_up.label");
+            label = Framework.Open(file_name);
         }
 
         public void PrintLabel(string barcode_str)
@@ -41,7 +41,7 @@ namespace MasterControllerInterface
             {
                 label.Print(Framework.GetLabelWriterPrinters().ToArray()[0], printParams);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             { }
         }
 
