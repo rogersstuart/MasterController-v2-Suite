@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.26730.16
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterControllerInterface", "MasterControllerInterface\MasterControllerInterface.csproj", "{D514A234-FA58-4E55-8BA0-CF1369572376}"
 EndProject
@@ -20,6 +20,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterControllerDotNet_Server", "MasterControllerDotNet_Server\MasterControllerDotNet_Server.csproj", "{481CF166-4AEF-4CF4-879F-C7D5831655B0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIP_CallOut", "SIP_CallOut\SIP_CallOut.csproj", "{29031782-3CF5-4C31-9406-0AFAC3E8F8C0}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulationUI", "SimulationUI\SimulationUI.csproj", "{35C245D2-D6DF-4676-A0C3-D43C5FE26E6A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SimulationCore", "SimulationCore\SimulationCore.csproj", "{C1B7D947-842A-4D7F-8B40-849165788A3A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,6 +67,14 @@ Global
 		{29031782-3CF5-4C31-9406-0AFAC3E8F8C0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{29031782-3CF5-4C31-9406-0AFAC3E8F8C0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{29031782-3CF5-4C31-9406-0AFAC3E8F8C0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{35C245D2-D6DF-4676-A0C3-D43C5FE26E6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{35C245D2-D6DF-4676-A0C3-D43C5FE26E6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{35C245D2-D6DF-4676-A0C3-D43C5FE26E6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{35C245D2-D6DF-4676-A0C3-D43C5FE26E6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1B7D947-842A-4D7F-8B40-849165788A3A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1B7D947-842A-4D7F-8B40-849165788A3A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1B7D947-842A-4D7F-8B40-849165788A3A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1B7D947-842A-4D7F-8B40-849165788A3A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
