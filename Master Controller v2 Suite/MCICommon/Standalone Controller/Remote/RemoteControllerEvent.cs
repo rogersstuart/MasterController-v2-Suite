@@ -16,7 +16,7 @@ namespace MCICommon
 
         bool triggered = false;
 
-        public RemoteExpanderEvent(DateTime event_datetime, bool[] exp0_mask, bool[] exp1_mask, bool[] exp0_vals, bool[] exp1_vals)
+        public RemoteControllerEvent(DateTime event_datetime, bool[] exp0_mask, bool[] exp1_mask, bool[] exp0_vals, bool[] exp1_vals)
         {
             this.event_datetime = event_datetime;
             this.exp0_mask = exp0_mask;

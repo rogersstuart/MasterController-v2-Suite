@@ -6,7 +6,11 @@ using System.Threading.Tasks;
 
 namespace MCICommon
 {
-    class ControllerEventArgs
+    public class ControllerEventArgs
     {
+        public ControllerEventArgs(dynamic d)
+        {
+
+        }
     }
 }
