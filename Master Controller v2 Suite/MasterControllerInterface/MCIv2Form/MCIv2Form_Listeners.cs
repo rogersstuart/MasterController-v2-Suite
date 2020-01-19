@@ -62,7 +62,7 @@ namespace MasterControllerInterface
 
             pgd.Dispose();
 
-            if (MCv2Persistance.Config.UIConfiguration.ShowDialogOnMCV2OfflineControllerInteractionSuccess && !res)
+            if (MCv2Persistance.Instance.Config.UIConfiguration.ShowDialogOnMCV2OfflineControllerInteractionSuccess && !res)
                 MessageBox.Show(V2LE_ViewingDevices[selected_device] + ": Upload Successful");
         }
 
@@ -87,16 +87,16 @@ namespace MasterControllerInterface
 
             Visible = false;
 
-            DatabaseConnectionEditor dbconneditor = new DatabaseConnectionEditor(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties, true);
+            DatabaseConnectionEditor dbconneditor = new DatabaseConnectionEditor(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties, true);
             var diag_result = dbconneditor.ShowDialog();
 
             if (diag_result == DialogResult.OK)
             {
-                var config = MCv2Persistance.Config;
+                var config = MCv2Persistance.Instance.Config;
 
                 config.DatabaseConfiguration.DatabaseConnectionProperties = dbconneditor.DBConnProp;
 
-                MCv2Persistance.Config = config;
+                MCv2Persistance.Instance.Config = config;
 
                 ProgressDialog pgd = new ProgressDialog("");
 
@@ -109,7 +109,7 @@ namespace MasterControllerInterface
 
                 ARDBConnectionManager.default_manager.Start();
 
-                var cfg = MCv2Persistance.Config;
+                var cfg = MCv2Persistance.Instance.Config;
                 var bcfg = cfg.BackupConfiguration;
 
                 if (bcfg.EnableAutoBackup)
@@ -130,7 +130,7 @@ namespace MasterControllerInterface
                     cfg.BackupConfiguration.LastAutoBackupTimestamp = DateTime.Now;
                 }
 
-                MCv2Persistance.Config = cfg;
+                MCv2Persistance.Instance.Config = cfg;
 
                 Visible = true;
                 Refresh();
@@ -151,14 +151,14 @@ namespace MasterControllerInterface
             //verify the database password first
             TextBoxDialog tbd = new TextBoxDialog("Enter Password", "Please enter the current database password.");
             if (tbd.ShowDialog(this) == DialogResult.OK)
-                if (tbd.TextBoxText == MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.Password)
+                if (tbd.TextBoxText == MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.Password)
                 {
                     ProgressDialog pgd = new ProgressDialog("Reset Database");
                     pgd.Show();
 
                     pgd.LabelText = "Reading Table List";
 
-                    using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                    using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                     {
                         await sqlconn.OpenAsync();
 
@@ -581,7 +581,7 @@ namespace MasterControllerInterface
 
         private async void devicesToolStripMenuItem_Click_1(object sender, EventArgs e)
         {
-            new DeviceManagerForm(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties).ShowDialog(this);
+            new DeviceManagerForm(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties).ShowDialog(this);
 
             await FullUIRefresh();
         }
@@ -707,14 +707,14 @@ namespace MasterControllerInterface
 
             try
             {
-                var hash_a = Utilities.GetFileHashAsBytes(MCv2Persistance.persistance_file);
+                var hash_a = Utilities.GetFileHashAsBytes(MCv2Persistance.Instance.PersistanceFile);
 
-                var notepad_proc = Process.Start("notepad.exe", MCv2Persistance.persistance_file);
+                var notepad_proc = Process.Start("notepad.exe", MCv2Persistance.Instance.PersistanceFile);
 
                 while (!notepad_proc.HasExited)
                     await Task.Delay(100);
 
-                changes = !Utilities.CompareByteArrays(hash_a, Utilities.GetFileHashAsBytes(MCv2Persistance.persistance_file));
+                changes = !Utilities.CompareByteArrays(hash_a, Utilities.GetFileHashAsBytes(MCv2Persistance.Instance.PersistanceFile));
 
 
             }
@@ -836,14 +836,14 @@ namespace MasterControllerInterface
             else
                 last_selected = current_selection;
 
-            var cfg = MCv2Persistance.Config;
+            var cfg = MCv2Persistance.Instance.Config;
 
             if (comboBox1.SelectedIndex < 1)
                 cfg.UIConfiguration.SelectedGroup = 0;
             else
                 cfg.UIConfiguration.SelectedGroup = ULAD_ViewingGroups.ElementAt(comboBox1.SelectedIndex - 1).Key;
 
-            MCv2Persistance.Config = cfg;
+            MCv2Persistance.Instance.Config = cfg;
 
             if (comboBox1.SelectedIndex > 0)
             {
@@ -883,7 +883,7 @@ namespace MasterControllerInterface
 
             button2.Enabled = false;
 
-            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
             {
                 await sqlconn.OpenAsync();
 
@@ -915,10 +915,10 @@ namespace MasterControllerInterface
         private void connectionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             //edit database connection properties
-            DatabaseConnectionEditor dbconneditor = new DatabaseConnectionEditor(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties, true);
+            DatabaseConnectionEditor dbconneditor = new DatabaseConnectionEditor(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties, true);
             var res = dbconneditor.ShowDialog();
             if (res == DialogResult.OK)
-                MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties = dbconneditor.DBConnProp;
+                MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties = dbconneditor.DBConnProp;
             else
                 if (res == DialogResult.Abort)
             {
@@ -934,14 +934,14 @@ namespace MasterControllerInterface
             //verify the database password first
             TextBoxDialog tbd = new TextBoxDialog("Enter Password", "Please enter the current database password.");
             if (tbd.ShowDialog(this) == DialogResult.OK)
-                if (tbd.TextBoxText == MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.Password)
+                if (tbd.TextBoxText == MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.Password)
                 {
                     ProgressDialog pgd = new ProgressDialog("Reset Database");
                     pgd.Show();
 
                     pgd.LabelText = "Reading Table List";
 
-                    using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                    using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                     {
                         await sqlconn.OpenAsync();
 
@@ -1009,7 +1009,7 @@ namespace MasterControllerInterface
             };
             watcher.Begin();
 
-            if (MCv2Persistance.Config.UIConfiguration.WarnIfNotAdministrator && !IsAdministrator())
+            if (MCv2Persistance.Instance.Config.UIConfiguration.WarnIfNotAdministrator && !IsAdministrator())
             {
                 var res = MessageBox.Show(this, "Some program functions will be unavailable without administrative permissions." + Environment.NewLine
                     + "Would you like to reload with elevated permissions?", "Warning", MessageBoxButtons.YesNo);
@@ -1150,7 +1150,7 @@ namespace MasterControllerInterface
 
                 pgd.LabelText = "Opening Database Connection";
 
-                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                 {
                     await sqlconn.OpenAsync();
 
@@ -1251,7 +1251,7 @@ namespace MasterControllerInterface
 
                 pgd.LabelText = "Opening Database Connection";
 
-                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                 {
                     await sqlconn.OpenAsync();
 
@@ -1287,7 +1287,7 @@ namespace MasterControllerInterface
 
             pgd.LabelText = "Opening Database Connection";
 
-            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
             {
                 await sqlconn.OpenAsync();
 
@@ -1332,9 +1332,9 @@ namespace MasterControllerInterface
 
             display_uids_in_short_form = encodeUIDsToolStripMenuItem.Checked;
 
-            var config = MCv2Persistance.Config;
+            var config = MCv2Persistance.Instance.Config;
             config.UIConfiguration.EncodeDisplayedUIDsFlag = display_uids_in_short_form;
-            MCv2Persistance.Config = config;
+            MCv2Persistance.Instance.Config = config;
 
             await FullUIRefresh();
         }
@@ -1368,7 +1368,7 @@ namespace MasterControllerInterface
 
 
                 ulong new_user_id = 0;
-                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                 {
                     await sqlconn.OpenAsync();
 
@@ -1443,7 +1443,7 @@ namespace MasterControllerInterface
         private async void button14_Click(object sender, EventArgs e)
         {
             //v2le add list button
-            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
             {
                 await sqlconn.OpenAsync();
 
@@ -1462,7 +1462,7 @@ namespace MasterControllerInterface
             tbd.TextBoxText = (string)listBox5.SelectedItem;
             if (tbd.ShowDialog() == DialogResult.OK)
             {
-                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                 {
                     await sqlconn.OpenAsync();
 
@@ -1477,7 +1477,7 @@ namespace MasterControllerInterface
         {
             //v2le delete list button
 
-            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
             {
                 await sqlconn.OpenAsync();
 
@@ -1527,7 +1527,7 @@ namespace MasterControllerInterface
 
             TCPConnectionProperties tcpconnprop = null;
 
-            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
             {
                 await sqlconn.OpenAsync();
 
@@ -1541,8 +1541,8 @@ namespace MasterControllerInterface
 
             pgd.Dispose();
 
-            if (((bool)res[0] && MCv2Persistance.Config.UIConfiguration.ShowDialogOnMCV2OfflineControllerInteractionSuccess) ||
-                (!((bool)res[0]) && MCv2Persistance.Config.UIConfiguration.ShowDialogOnMCV2OfflineControllerInteractionFailure))
+            if (((bool)res[0] && MCv2Persistance.Instance.Config.UIConfiguration.ShowDialogOnMCV2OfflineControllerInteractionSuccess) ||
+                (!((bool)res[0]) && MCv2Persistance.Instance.Config.UIConfiguration.ShowDialogOnMCV2OfflineControllerInteractionFailure))
                 MessageBox.Show(V2LE_ViewingDevices[selected_device] + ": " + (string)res[1]);
         }
 
@@ -1551,7 +1551,7 @@ namespace MasterControllerInterface
             //backup database
             string file_name = null;
 
-            var cfg = MCv2Persistance.Config;
+            var cfg = MCv2Persistance.Instance.Config;
             using (SaveFileDialog sfd = new SaveFileDialog())
             {
                 sfd.Filter = "Supported Extentions (*.db2bak)|*.db2bak";
@@ -1910,7 +1910,7 @@ namespace MasterControllerInterface
 
             pgd.LabelText = "Opening Database Connection";
 
-            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
             {
                 await sqlconn.OpenAsync();
 

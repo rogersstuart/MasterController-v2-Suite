@@ -80,7 +80,7 @@ namespace MCICommon
 
         private void InitClient()
         {
-            client = new MqttClient(MCv2Persistance.Config.MQTTBroker.AddressString);
+            client = new MqttClient(MCv2Persistance.Instance.Config.MQTTBroker.AddressString);
 
             client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
             var guid = Guid.NewGuid();

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -31,10 +32,15 @@ namespace SimulationCore.DoorControl
         {
             return new Task(() =>
             {
+                HttpListener listner = new HttpListener();
+
+                
                 while(!dc_sim_task_cancellation_source.Token.IsCancellationRequested)
                 {
                     //
                 }
+
+
             }, dc_sim_task_cancellation_source.Token);
         }
     }

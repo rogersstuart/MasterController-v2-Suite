@@ -18,6 +18,7 @@ using MCICommon;
 using System.Security.Cryptography;
 using System.Collections.Concurrent;
 using UIElements;
+using GlobalUtilities;
 
 namespace MasterControllerInterface
 {
@@ -33,7 +34,7 @@ namespace MasterControllerInterface
 
         string previous_card_search = null; //remember the last search to prevent spaces from causing an additional search
 
-        private System.Timers.Timer update_holdoff_timer = new System.Timers.Timer(MCv2Persistance.Config.UIConfiguration.UserLookupHoldoff);
+        private System.Timers.Timer update_holdoff_timer = new System.Timers.Timer(MCv2Persistance.Instance.Config.UIConfiguration.UserLookupHoldoff);
 
         private List<Control> card_lookup_controls = new List<Control>();
 
@@ -62,7 +63,7 @@ namespace MasterControllerInterface
 
         public MCIv2Form()
         {
-            var cfg = MCv2Persistance.Config;
+            var cfg = MCv2Persistance.Instance.Config;
             var bcfg = cfg.BackupConfiguration;
 
             if (bcfg.EnableAutoBackup)
@@ -120,7 +121,7 @@ namespace MasterControllerInterface
                 }
             }
 
-            MCv2Persistance.Config = cfg;
+            MCv2Persistance.Instance.Config = cfg;
 
             InitializeComponent();
 
@@ -336,7 +337,7 @@ namespace MasterControllerInterface
 
         private async Task FullUIRefresh()
         {
-            var config = MCv2Persistance.Config;
+            var config = MCv2Persistance.Instance.Config;
 
             encodeUIDsToolStripMenuItem.Checked = config.UIConfiguration.EncodeDisplayedUIDsFlag;
             //syncTimeAfterUploadsToolStripMenuItem.Checked = config.SyncTimeAfterUploadsFlag;
@@ -348,7 +349,7 @@ namespace MasterControllerInterface
 
             if (selected_tab == "tabPage2")
             {
-                await ULAD_UserGroupsRefresh(MCv2Persistance.Config.UIConfiguration.SelectedGroup);
+                await ULAD_UserGroupsRefresh(MCv2Persistance.Instance.Config.UIConfiguration.SelectedGroup);
                 //comboBox1.SelectedIndex = 0;
                 //RemoveDataGridView1Events();
                 await UserLookupAndDisplay(textBox1.Text.Trim(), true);

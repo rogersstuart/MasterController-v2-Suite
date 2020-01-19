@@ -68,7 +68,7 @@ namespace MasterControllerInterface
                 if (to_import.Count() == 0)
                     return;
 
-                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                 {
                     await sqlconn.OpenAsync();
 
@@ -133,7 +133,7 @@ namespace MasterControllerInterface
 
                         pgd.Step();
 
-                        using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                        using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                         {
                             pgd.Reset();
                             pgd.LabelText = "Opening Database Connection";
@@ -542,7 +542,7 @@ namespace MasterControllerInterface
             //get list of tables in the database
             List<string> db_table_names = new List<string>();
 
-            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+            using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
             {
                 using (MySqlCommand cmdName = new MySqlCommand("show tables", sqlconn))
                 using (MySqlDataReader reader = cmdName.ExecuteReader())

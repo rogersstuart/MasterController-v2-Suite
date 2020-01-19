@@ -82,7 +82,7 @@ namespace MasterControllerInterface
                 c.Enabled = false;
             }
 
-            var cfg = MCv2Persistance.Config;
+            var cfg = MCv2Persistance.Instance.Config;
 
             ProgressDialog pgd = new ProgressDialog("Database Restore");
 
@@ -107,7 +107,7 @@ namespace MasterControllerInterface
             button4.Enabled = false;
             button5.Enabled = false;
 
-            var cfg = MCv2Persistance.Config;
+            var cfg = MCv2Persistance.Instance.Config;
 
             ProgressDialog pgd = new ProgressDialog("Database Backup");
             
@@ -159,7 +159,7 @@ namespace MasterControllerInterface
             var bytes = File.ReadAllBytes(backups.Keys.ElementAt(selected[0].Index));
 
             string file_name;
-            var cfg = MCv2Persistance.Config;
+            var cfg = MCv2Persistance.Instance.Config;
             using (SaveFileDialog sfd = new SaveFileDialog())
             {
                 sfd.Filter = "Supported Extentions (*.db2bak)|*.db2bak";

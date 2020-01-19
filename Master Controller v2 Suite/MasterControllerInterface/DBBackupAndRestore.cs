@@ -54,7 +54,7 @@ namespace MasterControllerInterface
                         if (dbconnprop != null)
                             connection_string = dbconnprop.ConnectionString;
                         else
-                            connection_string = MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString;
+                            connection_string = MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString;
 
                         using (MySqlConnection sqlconn = new MySqlConnection(connection_string))
                         using (MySqlCommand cmd = new MySqlCommand())
@@ -85,7 +85,7 @@ namespace MasterControllerInterface
 
                     using (MemoryStream ms = new MemoryStream())
                     {
-                        using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                        using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                         using (MySqlCommand cmd = new MySqlCommand())
                         using (MySqlBackup mb = new MySqlBackup(cmd))
                         {
@@ -117,7 +117,7 @@ namespace MasterControllerInterface
 
                         var backprop = new BackupProperties();
                         backprop.Timestamp = now_is;
-                        var corrected_var = MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties;
+                        var corrected_var = MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties;
                         corrected_var.UID = "";
                         corrected_var.Password = "";
                         backprop.Database = corrected_var;

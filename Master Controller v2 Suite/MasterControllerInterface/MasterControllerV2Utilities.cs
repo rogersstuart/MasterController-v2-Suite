@@ -313,9 +313,9 @@ namespace MasterControllerInterface
                 }
             });
 
-            var config = MCv2Persistance.Config;
+            var config = MCv2Persistance.Instance.Config;
 
-            if (MCv2Persistance.Config.UIConfiguration.ShowDialogOnMCV2OfflineControllerInteractionFailure && error_flag)
+            if (MCv2Persistance.Instance.Config.UIConfiguration.ShowDialogOnMCV2OfflineControllerInteractionFailure && error_flag)
                 MessageBox.Show("An Error Occured While Uploading The List. The Operation Has Been Aborted.", "Error");
             else
             {

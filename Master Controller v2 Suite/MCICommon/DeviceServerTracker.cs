@@ -40,7 +40,7 @@ namespace MCICommon
             udp_listener.Client.ReceiveTimeout = 2000;
             udp_listener.EnableBroadcast = true;
 
-            endpoint = new IPEndPoint(IPAddress.Any, MCv2Persistance.Config.DeviceServerPort);
+            endpoint = new IPEndPoint(IPAddress.Any, MCv2Persistance.Instance.Config.DeviceServerPort);
 
             udp_listener.Client.Bind(endpoint);
 

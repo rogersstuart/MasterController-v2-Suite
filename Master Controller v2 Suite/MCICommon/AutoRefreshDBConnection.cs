@@ -28,7 +28,7 @@ namespace MCICommon
 
         private void UpdateRefreshConfig()
         {
-            var config = MCv2Persistance.Config.DatabaseConfiguration;
+            var config = MCv2Persistance.Instance.Config.DatabaseConfiguration;
 
             refresh_interval = config.DBCacheRefreshInterval;
 
@@ -99,7 +99,7 @@ namespace MCICommon
 
         private async Task<MySqlConnection> GenerateNewConnection()
         {
-            MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString);
+            MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString);
             await sqlconn.OpenAsync();
             return sqlconn;
         }

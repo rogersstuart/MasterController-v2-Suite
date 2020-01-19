@@ -43,7 +43,7 @@ namespace MasterControllerInterface
 
                     List<string> table_names = new List<string>();
 
-                    using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                    using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                     {
                         pgd.LabelText = "Opening Database Connection";
 
@@ -85,7 +85,7 @@ namespace MasterControllerInterface
 
                           List<string> column_names = new List<string>();
 
-                          using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                          using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                           {
                               await sqlconn.OpenAsync();
 

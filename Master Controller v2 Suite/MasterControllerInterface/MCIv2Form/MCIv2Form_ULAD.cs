@@ -349,7 +349,7 @@ namespace MasterControllerInterface
 
             if (to_select > 0)
             {
-                var cfg = MCv2Persistance.Config;
+                var cfg = MCv2Persistance.Instance.Config;
 
                 int index = -1;
                 for (int i = 0; i < ULAD_ViewingGroups.Keys.Count(); i++)
@@ -368,7 +368,7 @@ namespace MasterControllerInterface
                     cfg.UIConfiguration.SelectedGroup = 0;
                 }
 
-                MCv2Persistance.Config = cfg;
+                MCv2Persistance.Instance.Config = cfg;
             }
 
             if (comboBox1.SelectedIndex > 0)

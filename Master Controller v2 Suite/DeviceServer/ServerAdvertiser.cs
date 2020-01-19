@@ -28,7 +28,7 @@ namespace DeviceServer
         {
             DeviceServer.logger.AppendLog(DateTime.Now, "SA - Starting");
 
-            var config = MCv2Persistance.Config;
+            var config = MCv2Persistance.Instance.Config;
 
             host_guid = config.GUID;
             sync_broadcast_port = config.DeviceServerPort;

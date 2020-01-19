@@ -42,7 +42,7 @@ namespace MasterControllerInterface
 
                 try
                 {
-                    var config = MCv2Persistance.Config;
+                    var config = MCv2Persistance.Instance.Config;
 
                     (new FileInfo(AppDomain.CurrentDomain.BaseDirectory + "backups\\")).Directory.Create();
 
@@ -59,9 +59,9 @@ namespace MasterControllerInterface
                             {
                                 config.DatabaseConfiguration.DatabaseConnectionProperties = dbconneditor.DBConnProp;
 
-                                MCv2Persistance.Config = config;
+                                MCv2Persistance.Instance.Config = config;
 
-                                //MCv2Persistance.SaveToFile();
+                                //MCv2Persistance.Instance.SaveToFile();
                             }
                             else
                                 if (res == DialogResult.Abort)
@@ -89,9 +89,9 @@ namespace MasterControllerInterface
                 {
                     MessageBox.Show("A database error has occured." + Environment.NewLine + ex.Message);
 
-                    DatabaseConnectionEditor dbconneditor = new DatabaseConnectionEditor(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties, false);
+                    DatabaseConnectionEditor dbconneditor = new DatabaseConnectionEditor(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties, false);
                     if (dbconneditor.ShowDialog() == DialogResult.OK)
-                        MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties = dbconneditor.DBConnProp;
+                        MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties = dbconneditor.DBConnProp;
                     else
                         break;
                 }

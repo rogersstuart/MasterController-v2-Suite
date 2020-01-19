@@ -75,7 +75,7 @@ namespace DeviceServer
 
                 try
                 {
-                    sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString);
+                    sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString);
                     await sqlconn.OpenAsync();
 
                     //the following will return a list of lists containing the following fields

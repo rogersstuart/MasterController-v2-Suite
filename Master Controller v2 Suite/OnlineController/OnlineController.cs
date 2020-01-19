@@ -12,8 +12,8 @@ namespace OnlineController
 {
     public class OnlineController
     {
-        private static MqttClient client = new MqttClient(MCv2Persistance.Config.MQTTBroker.AddressString);
-        private static readonly ulong elevator_list_id = MCv2Persistance.Config.OnlineControllerList;
+        private static MqttClient client = new MqttClient(MCv2Persistance.Instance.Config.MQTTBroker.AddressString);
+        private static readonly ulong elevator_list_id = MCv2Persistance.Instance.Config.OnlineControllerList;
         private static FloorStateTracker[] trackers = new FloorStateTracker[] { new FloorStateTracker(1), new FloorStateTracker(2) };
 
         public OnlineController()

@@ -46,7 +46,7 @@ namespace MasterControllerInterface
 
                 previous_search = query;
 
-                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
+                using (MySqlConnection sqlconn = new MySqlConnection(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString))
                 {
                     await sqlconn.OpenAsync();
 
@@ -128,7 +128,7 @@ namespace MasterControllerInterface
         {
             dataGridView1.Enabled = false;
 
-            e.Row.Cells[0].Value = await DatabaseUtilities.GenerateUniqueUserID(MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties);
+            e.Row.Cells[0].Value = await DatabaseUtilities.GenerateUniqueUserID(MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties);
 
             dataGridView1.Enabled = true;
 

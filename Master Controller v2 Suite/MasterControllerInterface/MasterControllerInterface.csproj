@@ -230,10 +230,10 @@
     <Compile Include="UIForms\DeviceManagerForm.Designer.cs">
       <DependentUpon>DeviceManagerForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="ErrorBox.cs">
+    <Compile Include="UIForms\ErrorBox.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="ErrorBox.Designer.cs">
+    <Compile Include="UIForms\ErrorBox.Designer.cs">
       <DependentUpon>ErrorBox.cs</DependentUpon>
     </Compile>
     <Compile Include="UIForms\ExportForm.cs">
@@ -405,7 +405,7 @@
     <EmbeddedResource Include="UIForms\DeviceManagerForm.resx">
       <DependentUpon>DeviceManagerForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="ErrorBox.resx">
+    <EmbeddedResource Include="UIForms\ErrorBox.resx">
       <DependentUpon>ErrorBox.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UIForms\ExportForm.resx">
@@ -491,6 +491,10 @@
     <ProjectReference Include="..\DoorControl\DoorControl.csproj">
       <Project>{44300865-8cb8-439e-8ce2-b570ede007bc}</Project>
       <Name>DoorControl</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\GlobalUtilities\GlobalUtilities.csproj">
+      <Project>{5522246d-7b98-4f67-b19c-43ce8b5ef37c}</Project>
+      <Name>GlobalUtilities</Name>
     </ProjectReference>
     <ProjectReference Include="..\LabelPrinting\LabelPrinting.csproj">
       <Project>{7a2fac33-762a-478e-9715-a0cade87b2f2}</Project>

@@ -117,10 +117,11 @@
     <Compile Include="BaseConverter.cs" />
     <Compile Include="BinaryGenerator.cs" />
     <Compile Include="Configuration\ConfigurationManager.cs" />
+    <Compile Include="Configuration\MCv2Persistance.cs" />
     <Compile Include="ConnectionProperties.cs" />
     <Compile Include="DatabaseConnectionProperties.cs" />
-    <Compile Include="Database\DatabaseUtilities.cs" />
-    <Compile Include="Database\UserDBUtilities.cs" />
+    <Compile Include="Database\Utilities\DatabaseUtilities.cs" />
+    <Compile Include="Database\Utilities\UserDBUtilities.cs" />
     <Compile Include="DBCard.cs" />
     <Compile Include="DeviceServerTracker.cs" />
     <Compile Include="Expander\Common\ExpanderCommandTransactionContainer.cs" />
@@ -139,7 +140,7 @@
     <Compile Include="FloorStateTracker\BuildingFloor.cs" />
     <Compile Include="FloorStateTracker\FloorStateModifier.cs" />
     <Compile Include="FloorStateTracker\FloorStateTracker.cs" />
-    <Compile Include="Database\GroupDBUtilities.cs" />
+    <Compile Include="Database\Utilities\GroupDBUtilities.cs" />
     <Compile Include="HardwareConfiguration.cs" />
     <Compile Include="HostInfo.cs" />
     <Compile Include="ListEntryUtilities.cs" />
@@ -158,7 +159,6 @@
     <Compile Include="Standalone Controller\Local\LocalControllerMonitor.cs" />
     <Compile Include="ManagedStream.cs" />
     <Compile Include="Configuration\MCv2Configuration.cs" />
-    <Compile Include="Configuration\MCv2Persistance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ProtocolDetector.cs" />
     <Compile Include="Standalone Controller\Common\ControllerCommand.cs" />

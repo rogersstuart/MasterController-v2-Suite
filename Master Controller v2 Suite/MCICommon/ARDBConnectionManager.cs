@@ -33,7 +33,7 @@ namespace MCICommon
         
         public void Start()
         {
-            int maintain_num_connections = MCv2Persistance.Config.DatabaseConfiguration.NumCachedDBConnections;
+            int maintain_num_connections = MCv2Persistance.Instance.Config.DatabaseConfiguration.NumCachedDBConnections;
 
             progi = default_progress_interface;
 
@@ -56,7 +56,7 @@ namespace MCICommon
 
             db_connection_pool.Clear();
 
-            db_connection_string_cache = MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString;
+            db_connection_string_cache = MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString;
 
             //ready
             if (progi != null)
@@ -117,7 +117,7 @@ namespace MCICommon
 
                 lock (pool_lock)
                 {
-                    if (db_connection_string_cache != MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString)
+                    if (db_connection_string_cache != MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString)
                     {
                         //the connection string has changed. all connections are now invalid.
 
@@ -133,7 +133,7 @@ namespace MCICommon
 
                         db_connection_pool.Clear();
 
-                        db_connection_string_cache = MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString;
+                        db_connection_string_cache = MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties.ConnectionString;
                     }
 
                     if (db_connection_pool.Count() > 0)
@@ -164,7 +164,7 @@ namespace MCICommon
         {
             lock (pool_lock)
             {
-                int maintain_num_connections = MCv2Persistance.Config.DatabaseConfiguration.NumCachedDBConnections;
+                int maintain_num_connections = MCv2Persistance.Instance.Config.DatabaseConfiguration.NumCachedDBConnections;
 
                 db_connections_checked_out.Remove(sqlconn);
 

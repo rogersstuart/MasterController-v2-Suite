@@ -335,7 +335,7 @@ namespace MasterControllerInterface
         {
             dbconnprop = DatabaseConnectionProperties.FromArray(GetTextBoxStrings());
 
-            MCv2Persistance.Config.DatabaseConfiguration.DatabaseConnectionProperties = dbconnprop;
+            MCv2Persistance.Instance.Config.DatabaseConfiguration.DatabaseConnectionProperties = dbconnprop;
 
             List<string> files_to_import = new List<string>();
 
@@ -382,9 +382,9 @@ namespace MasterControllerInterface
 
         private async void restoreDBFromAutosaveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var config = MCv2Persistance.Config;
+            var config = MCv2Persistance.Instance.Config;
             config.DatabaseConfiguration.DatabaseConnectionProperties = DBConnProp;
-            MCv2Persistance.Config = config;
+            MCv2Persistance.Instance.Config = config;
 
             new BackupManagerForm().ShowDialog(this);
         }

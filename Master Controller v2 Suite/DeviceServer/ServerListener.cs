@@ -57,7 +57,7 @@ namespace DeviceServer
         {
             return new Task(async () =>
             {
-                var config = MCv2Persistance.Config;
+                var config = MCv2Persistance.Instance.Config;
 
                 var host_guid = config.GUID;
                 var sync_port = config.DeviceServerPort;
@@ -110,14 +110,7 @@ namespace DeviceServer
         {
             Task.Run(() =>
             {
-                //DeviceServer.logger.AppendLog(DateTime.Now, "SL - Client Connected");
                 DeviceServer.logger.AppendLog("SL - Client Connected");
-
-                //var xmlSerializer = new DataContractSerializer(typeof(CommandTransactionContainer));
-                //var stream = client.GetStream();
-
-                //client.ReceiveTimeout = 10000;
-                //client.SendTimeout = 10000;
 
                 while (true)
                 {
@@ -125,12 +118,6 @@ namespace DeviceServer
 
                     try
                     {
-                        /*
-                        StreamReader sr = new StreamReader(stream);
-                            
-                        using (XmlReader xmlReader = XmlReader.Create(sr, new XmlReaderSettings { IgnoreComments = true, IgnoreWhitespace = true }))
-                            ctc = (CommandTransactionContainer)xmlSerializer.ReadObject(xmlReader);
-                            */
                         ctc = (CommandTransactionContainer)XMLSerdes.Decode(XMLSerdes.ReceivePacket(client, typeof(CommandTransactionContainer)), typeof(CommandTransactionContainer));
                     }
                     catch (Exception ex)
@@ -156,16 +143,14 @@ namespace DeviceServer
                         t.AutoReset = true;
                         t.Elapsed += (a, b) => { DeviceServer.logger.AppendLog("SL - Waiting for command execution to complete." + TimeSpan.FromTicks(sw.ElapsedTicks).ToString()); };
                         t.Start();
-                        //await Task.Run(() =>
-                        //{
+                        
                         foreach(var handle in handles)
                             handle.Handle.WaitOne();
-                        //});
+                        
                         sw.Stop();
                         t.Stop();
 
                         DeviceServer.logger.AppendLog("SL - Command Execution Complete");
-
 
                         var commands = handles.Select(x => x.Command).ToArray();
 
@@ -173,10 +158,6 @@ namespace DeviceServer
 
                         try
                         {
-                            /*
-                            xmlSerializer.WriteObject(stream, r_ctc);
-                            stream.Flush();
-                            */
                             XMLSerdes.SendPacket(client, r_ctc);
                         }
                         catch (Exception ex)
