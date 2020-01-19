@@ -8,11 +8,14 @@ using System.Threading;
 using MQTTnet.Client;
 using MQTTnet;
 using MQTTnet.Client.Options;
+using GlobalUtilities;
 
 namespace MessageServer
 {
     class Program
     {
+        private static FileTextLogger logger = new FileTextLogger();
+        
         private static RemoteExpanderMonitor rem;
 
         private static Object tmr_mod_lock = new Object();
@@ -180,8 +183,8 @@ namespace MessageServer
                         }
                         catch (Exception ex)
                         {
-                            DebugWriter.AppendLog("MessageServer - An error occured while publishing status message.");
-                            DebugWriter.AppendLog(ex.Message);
+                            logger.AppendLog("MessageServer - An error occured while publishing status message.");
+                            logger.AppendLog(ex.Message);
                         }
                     });
                 };
@@ -304,8 +307,8 @@ namespace MessageServer
             }
             catch (Exception ex)
             {
-                DebugWriter.AppendLog("A fatal error occured while writing to the expanders. The operation was aborted.");
-                DebugWriter.AppendLog(ex.Message);
+                logger.AppendLog("A fatal error occured while writing to the expanders. The operation was aborted.");
+                logger.AppendLog(ex.Message);
             }
         }
     }

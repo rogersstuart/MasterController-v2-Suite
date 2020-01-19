@@ -9,6 +9,7 @@ using System.Threading;
 using System.Runtime.Serialization;
 using System.Xml;
 using System.Diagnostics;
+using GlobalUtilities;
 
 namespace MCICommon
 {
@@ -34,14 +35,14 @@ namespace MCICommon
 
                 var t = new System.Timers.Timer(1000);
                 t.AutoReset = true;
-                t.Elapsed += (a, b) => { DebugWriter.AppendLog("REC, SCE - Waiting for simplex-command execution to complete. " + TimeSpan.FromTicks(sw.ElapsedTicks).ToString()); };
+                t.Elapsed += (a, b) => { FileTextLogger.logger.AppendLog("REC, SCE - Waiting for simplex-command execution to complete. " + TimeSpan.FromTicks(sw.ElapsedTicks).ToString()); };
                 t.Start();
 
                 var ctc = new CommandTransactionContainer(device_id, new ExpanderCommand[] { expcmd });
 
                 try
                 {
-                    DebugWriter.AppendLog("REC, SCE - connecting to = " + hi.TCPConnectionProperties.AddressString + " " + hi.TCPConnectionProperties.Port);
+                    FileTextLogger.logger.AppendLog("REC, SCE - connecting to = " + hi.TCPConnectionProperties.AddressString + " " + hi.TCPConnectionProperties.Port);
 
                     using (var client = new TcpClient())
                     {
@@ -50,7 +51,7 @@ namespace MCICommon
                         client.SendTimeout = 5000;
                         client.Connect(hi.TCPConnectionProperties.AddressString, hi.TCPConnectionProperties.Port);
 
-                        DebugWriter.AppendLog("REC, SCE - executing command");
+                        FileTextLogger.logger.AppendLog("REC, SCE - executing command");
 
                         try
                         {
@@ -58,8 +59,8 @@ namespace MCICommon
                         }
                         catch (Exception ex)
                         {
-                            DebugWriter.AppendLog("REC, SCE - An error occured while serializing expander command");
-                            DebugWriter.AppendLog(ex.Message);
+                            FileTextLogger.logger.AppendLog("REC, SCE - An error occured while serializing expander command");
+                            FileTextLogger.logger.AppendLog(ex.Message);
                             throw;
                         }
 
@@ -69,18 +70,18 @@ namespace MCICommon
                         }
                         catch (Exception ex)
                         {
-                            DebugWriter.AppendLog("REC, SCE - An error occured while deserializing expander command");
-                            DebugWriter.AppendLog(ex.Message);
+                            FileTextLogger.logger.AppendLog("REC, SCE - An error occured while deserializing expander command");
+                            FileTextLogger.logger.AppendLog(ex.Message);
                             throw;
                         }
 
-                        DebugWriter.AppendLog("REC, SCE - Command Executed");
+                        FileTextLogger.logger.AppendLog("REC, SCE - Command Executed");
                     }
                 }
                 catch (Exception ex)
                 {
-                    DebugWriter.AppendLog("REC, SCE - Simplex-command execution failed to complete. The operation has been aborted.");
-                    DebugWriter.AppendLog(ex.Message);
+                    FileTextLogger.logger.AppendLog("REC, SCE - Simplex-command execution failed to complete. The operation has been aborted.");
+                    FileTextLogger.logger.AppendLog(ex.Message);
                 }
 
                 sw.Stop();
@@ -107,14 +108,14 @@ namespace MCICommon
 
                 var t = new System.Timers.Timer(1000);
                 t.AutoReset = true;
-                t.Elapsed += (a, b) => { DebugWriter.AppendLog("REC, MCE - Waiting for multi-command execution to complete." + TimeSpan.FromTicks(sw.ElapsedTicks).ToString()); };
+                t.Elapsed += (a, b) => { FileTextLogger.logger.AppendLog("REC, MCE - Waiting for multi-command execution to complete." + TimeSpan.FromTicks(sw.ElapsedTicks).ToString()); };
                 t.Start();
 
                 var ctc = new CommandTransactionContainer(device_id, cmdhdls.Select(x => x.Command).ToArray());
 
                 try
                 {
-                    DebugWriter.AppendLog("REC, MCE - connecting to = " + hi.TCPConnectionProperties.AddressString + " " + hi.TCPConnectionProperties.Port);
+                    FileTextLogger.logger.AppendLog("REC, MCE - connecting to = " + hi.TCPConnectionProperties.AddressString + " " + hi.TCPConnectionProperties.Port);
 
                     using (var client = new TcpClient())
                     {
@@ -123,7 +124,7 @@ namespace MCICommon
                         client.SendTimeout = 5000;
                         client.Connect(hi.TCPConnectionProperties.AddressString, hi.TCPConnectionProperties.Port);
 
-                        DebugWriter.AppendLog("REC, MCE - executing command");
+                        FileTextLogger.logger.AppendLog("REC, MCE - executing command");
 
                         try
                         {
@@ -131,8 +132,8 @@ namespace MCICommon
                         }
                         catch (Exception ex)
                         {
-                            DebugWriter.AppendLog("REC, MCE - An error occured while serializing expander command");
-                            DebugWriter.AppendLog(ex.Message);
+                            FileTextLogger.logger.AppendLog("REC, MCE - An error occured while serializing expander command");
+                            FileTextLogger.logger.AppendLog(ex.Message);
                             throw;
                         }
 
@@ -142,18 +143,18 @@ namespace MCICommon
                         }
                         catch (Exception ex)
                         {
-                            DebugWriter.AppendLog("REC, MCE - An error occured while deserializing expander command");
-                            DebugWriter.AppendLog(ex.Message);
+                            FileTextLogger.logger.AppendLog("REC, MCE - An error occured while deserializing expander command");
+                            FileTextLogger.logger.AppendLog(ex.Message);
                             throw;
                         }
 
-                        DebugWriter.AppendLog("REC, MCE - Commands Executed");
+                        FileTextLogger.logger.AppendLog("REC, MCE - Commands Executed");
                     }
                 }
                 catch (Exception ex)
                 {
-                    DebugWriter.AppendLog("REC, MCE - Multi-command execution failed to complete. The operation has been aborted.");
-                    DebugWriter.AppendLog(ex.Message);
+                    FileTextLogger.logger.AppendLog("REC, MCE - Multi-command execution failed to complete. The operation has been aborted.");
+                    FileTextLogger.logger.AppendLog(ex.Message);
                 }
 
                 sw.Stop();

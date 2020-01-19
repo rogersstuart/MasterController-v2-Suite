@@ -122,7 +122,6 @@
     <Compile Include="Database\DatabaseUtilities.cs" />
     <Compile Include="Database\UserDBUtilities.cs" />
     <Compile Include="DBCard.cs" />
-    <Compile Include="DebugWriter.cs" />
     <Compile Include="DeviceServerTracker.cs" />
     <Compile Include="Expander\Common\ExpanderCommandTransactionContainer.cs" />
     <Compile Include="Expander\Common\ExpanderCommand.cs" />
@@ -177,7 +176,12 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="..\GlobalUtilities\GlobalUtilities.csproj">
+      <Project>{5522246d-7b98-4f67-b19c-43ce8b5ef37c}</Project>
+      <Name>GlobalUtilities</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>

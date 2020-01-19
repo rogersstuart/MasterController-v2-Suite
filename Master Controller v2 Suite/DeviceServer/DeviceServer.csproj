@@ -121,13 +121,16 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerListener.cs" />
-    <Compile Include="ServiceLog.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GlobalUtilities\GlobalUtilities.csproj">
+      <Project>{5522246d-7b98-4f67-b19c-43ce8b5ef37c}</Project>
+      <Name>GlobalUtilities</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MasterControllerInterface\MasterControllerInterface.csproj">
       <Project>{d514a234-fa58-4e55-8ba0-cf1369572376}</Project>
       <Name>MasterControllerInterface</Name>

@@ -12,6 +12,8 @@ namespace GlobalUtilities
 {
     public class FileTextLogger : IDisposable
     {
+        public static FileTextLogger logger = new FileTextLogger();
+        
         private LoggerOptions options = null;
 
         private ConcurrentQueue<KeyValuePair<DateTime, string>> pending_log_entries = new ConcurrentQueue<KeyValuePair<DateTime, string>>();

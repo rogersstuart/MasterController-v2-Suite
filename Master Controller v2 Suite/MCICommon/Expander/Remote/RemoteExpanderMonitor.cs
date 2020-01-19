@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using System.Collections.Concurrent;
+using GlobalUtilities;
 
 namespace MCICommon
 {
@@ -77,7 +78,7 @@ namespace MCICommon
         //the ignore connection flag will prevent reinitilization of the connection if the connection is not null
         public void Start(bool ignoreconn = false)
         {
-            DebugWriter.AppendLog("REM - Starting");
+            FileTextLogger.logger.AppendLog("REM - Starting");
 
             if (expconn != null && !ignoreconn)
                 Stop();
@@ -101,7 +102,7 @@ namespace MCICommon
 
             GenerateWorkers();
 
-            DebugWriter.AppendLog("REM - Started");
+            FileTextLogger.logger.AppendLog("REM - Started");
         }
 
         private void GenerateWorkers()
@@ -129,8 +130,8 @@ namespace MCICommon
                     }
                     catch (Exception ex)
                     {
-                        DebugWriter.AppendLog("REM, GEN - A fatal error occured during expander state refresh. The operation has been aborted");
-                        DebugWriter.AppendLog(ex.Message);
+                        FileTextLogger.logger.AppendLog("REM, GEN - A fatal error occured during expander state refresh. The operation has been aborted");
+                        FileTextLogger.logger.AppendLog(ex.Message);
                     }   
                 }                    
             });
@@ -138,7 +139,7 @@ namespace MCICommon
 
         private void Refresh()
         {
-            DebugWriter.AppendLog("REM, GEN - Begin Refresh");
+            FileTextLogger.logger.AppendLog("REM, GEN - Begin Refresh");
 
             ExpanderCommandHandle[] cmdhdls;
             ExpanderCommand[] expcmds = new ExpanderCommand[5];
@@ -151,7 +152,7 @@ namespace MCICommon
             lock (expander_connection_lock)
                 cmdhdls = expconn.EnqueueCommands(expcmds);
 
-            DebugWriter.AppendLog("REM, GEN - Enqueued Commands");
+            FileTextLogger.logger.AppendLog("REM, GEN - Enqueued Commands");
 
             ExpanderState new_state = new ExpanderState();
 
@@ -173,20 +174,20 @@ namespace MCICommon
                     new_state.Expander0State[index_counter] ^= exphwconfig.Expander0Configuration[index_counter];
                     new_state.Expander1State[index_counter] ^= exphwconfig.Expander1Configuration[index_counter];
                 }
-            DebugWriter.AppendLog("REM, GEN - Command 1 of 5 completed execution.");
+            FileTextLogger.logger.AppendLog("REM, GEN - Command 1 of 5 completed execution.");
 
             cmdhdls[1].Handle.WaitOne();
             buffer = new byte[2];
             Array.Copy(cmdhdls[1].Command.RxPacket, 1, buffer, 0, 2);
             new_state.FanSpeed = BitConverter.ToUInt16(buffer, 0);
-            DebugWriter.AppendLog("REM, GEN - Command 2 of 5 completed execution.");
+            FileTextLogger.logger.AppendLog("REM, GEN - Command 2 of 5 completed execution.");
 
             cmdhdls[2].Handle.WaitOne();
             buffer = new byte[8];
             Array.Copy(cmdhdls[2].Command.RxPacket, 1, buffer, 0, 8);
             new_state.BusVoltage = BitConverter.ToSingle(buffer, 0);
             new_state.BusPower = BitConverter.ToSingle(buffer, 4);
-            DebugWriter.AppendLog("REM, GEN - Command 3 of 5 completed execution.");
+            FileTextLogger.logger.AppendLog("REM, GEN - Command 3 of 5 completed execution.");
 
             cmdhdls[3].Handle.WaitOne();
             buffer = new byte[12];
@@ -194,32 +195,32 @@ namespace MCICommon
             new_state.FanTemperature = BitConverter.ToSingle(buffer, 0);
             new_state.Board0Temperature = BitConverter.ToSingle(buffer, 4);
             new_state.Board1Temperature = BitConverter.ToSingle(buffer, 8);
-            DebugWriter.AppendLog("REM, GEN - Command 4 of 5 completed execution.");
+            FileTextLogger.logger.AppendLog("REM, GEN - Command 4 of 5 completed execution.");
 
             cmdhdls[4].Handle.WaitOne();
             buffer = new byte[8];
             Array.Copy(cmdhdls[4].Command.RxPacket, 1, buffer, 0, 4);
             new_state.Uptime = BitConverter.ToUInt64(buffer, 0);
-            DebugWriter.AppendLog("REM, GEN - Command 5 of 5 completed execution.");
+            FileTextLogger.logger.AppendLog("REM, GEN - Command 5 of 5 completed execution.");
 
             lock (expander_state_lock)
                 expst = new ExpanderState(new_state);
 
-            DebugWriter.AppendLog("REM, GEN - State Updated");
+            FileTextLogger.logger.AppendLog("REM, GEN - State Updated");
 
             if (freshstateevent != null)
                 freshstateevent(this, new ExpanderEventArgs(new_state));
 
-            DebugWriter.AppendLog("REM, GEN - Event Generated");
+            FileTextLogger.logger.AppendLog("REM, GEN - Event Generated");
 
-            DebugWriter.AppendLog("REM, GEN - End Refresh");
+            FileTextLogger.logger.AppendLog("REM, GEN - End Refresh");
         }
 
         public void WriteExpanders(bool[] exp0_mask, bool[] exp1_mask, bool[] exp0_vals, bool[] exp1_vals)
         {
             var t = new Task(() =>
             {
-                DebugWriter.AppendLog("REM, WRITE - Begin Writing Expander");
+                FileTextLogger.logger.AppendLog("REM, WRITE - Begin Writing Expander");
 
                 //apply hardware configuration
                 //lock (hwconfig_lock)
@@ -264,11 +265,11 @@ namespace MCICommon
                 }
                 catch (Exception ex)
                 {
-                    DebugWriter.AppendLog("REM, WRITE - A fatal error occured while writing to expander. The operation has been aborted.");
-                    DebugWriter.AppendLog(ex.Message);
+                    FileTextLogger.logger.AppendLog("REM, WRITE - A fatal error occured while writing to expander. The operation has been aborted.");
+                    FileTextLogger.logger.AppendLog(ex.Message);
                 }
 
-                DebugWriter.AppendLog("REM, WRITE - End Writing Expander");
+                FileTextLogger.logger.AppendLog("REM, WRITE - End Writing Expander");
 
                 //Start(true);
             });
@@ -282,7 +283,7 @@ namespace MCICommon
         {
             if (expconn != null)
             {
-                DebugWriter.AppendLog("REM, RST - Begin Reset Expander");
+                FileTextLogger.logger.AppendLog("REM, RST - Begin Reset Expander");
 
                 Stop(true); //this will stop the monitor thread and connection
 
@@ -297,7 +298,7 @@ namespace MCICommon
 
                 Start(true); //this will generate a new connection and monitor thread
 
-                DebugWriter.AppendLog("REM, RST - End Reset Expander");
+                FileTextLogger.logger.AppendLog("REM, RST - End Reset Expander");
             }
         }
 

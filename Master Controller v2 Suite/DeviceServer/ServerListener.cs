@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml;
+using GlobalUtilities;
 
 namespace DeviceServer
 {
@@ -21,18 +22,18 @@ namespace DeviceServer
 
         public static void Start()
         {
-            ServiceLog.AppendLog(DateTime.Now, "SL - Starting");
+            DeviceServer.logger.AppendLog(DateTime.Now, "SL - Starting");
 
             server_active = true;
             listen_for_connections = GenerateListenerTask();
             listen_for_connections.Start();
 
-            ServiceLog.AppendLog(DateTime.Now, "SL - Started");
+            DeviceServer.logger.AppendLog(DateTime.Now, "SL - Started");
         }
 
         public static AutoResetEvent Stop()
         {
-            ServiceLog.AppendLog(DateTime.Now, "SL - Stopping");
+            DeviceServer.logger.AppendLog(DateTime.Now, "SL - Stopping");
 
             var are = new AutoResetEvent(false);
 
@@ -46,7 +47,7 @@ namespace DeviceServer
 
                 are.Set();
 
-                ServiceLog.AppendLog(DateTime.Now, "SL - Stopped");
+                DeviceServer.logger.AppendLog(DateTime.Now, "SL - Stopped");
             });
 
             return are;
@@ -84,7 +85,7 @@ namespace DeviceServer
                             }
                             catch (Exception ex)
                             {
-                                DebugWriter.AppendLog("SL - An exception occured while attempting to accept a client.");
+                                DeviceServer.logger.AppendLog("SL - An exception occured while attempting to accept a client.");
                                 await Task.Delay(2000);
                             }
                     }
@@ -109,8 +110,8 @@ namespace DeviceServer
         {
             Task.Run(() =>
             {
-                //ServiceLog.AppendLog(DateTime.Now, "SL - Client Connected");
-                DebugWriter.AppendLog("SL - Client Connected");
+                //DeviceServer.logger.AppendLog(DateTime.Now, "SL - Client Connected");
+                DeviceServer.logger.AppendLog("SL - Client Connected");
 
                 //var xmlSerializer = new DataContractSerializer(typeof(CommandTransactionContainer));
                 //var stream = client.GetStream();
@@ -134,16 +135,16 @@ namespace DeviceServer
                     }
                     catch (Exception ex)
                     {
-                        DebugWriter.AppendLog("SL - An exception occured while attempting to deserialize received container.");
+                        DeviceServer.logger.AppendLog("SL - An exception occured while attempting to deserialize received container.");
 
-                        DebugWriter.AppendLog(ex.Message);
+                        DeviceServer.logger.AppendLog(ex.Message);
 
                         break;
                     }
 
                     if (ctc != null)
                     {
-                        DebugWriter.AppendLog("SL - Opening Device Connection");
+                        DeviceServer.logger.AppendLog("SL - Opening Device Connection");
 
                         var connection = DeviceConnectionManager.GetConnecion(ctc.DeviceID);
 
@@ -153,7 +154,7 @@ namespace DeviceServer
                         sw.Start();
                         var t = new System.Timers.Timer(1000);
                         t.AutoReset = true;
-                        t.Elapsed += (a, b) => { DebugWriter.AppendLog("SL - Waiting for command execution to complete." + TimeSpan.FromTicks(sw.ElapsedTicks).ToString()); };
+                        t.Elapsed += (a, b) => { DeviceServer.logger.AppendLog("SL - Waiting for command execution to complete." + TimeSpan.FromTicks(sw.ElapsedTicks).ToString()); };
                         t.Start();
                         //await Task.Run(() =>
                         //{
@@ -163,7 +164,7 @@ namespace DeviceServer
                         sw.Stop();
                         t.Stop();
 
-                        DebugWriter.AppendLog("SL - Command Execution Complete");
+                        DeviceServer.logger.AppendLog("SL - Command Execution Complete");
 
 
                         var commands = handles.Select(x => x.Command).ToArray();
@@ -180,9 +181,9 @@ namespace DeviceServer
                         }
                         catch (Exception ex)
                         {
-                            DebugWriter.AppendLog("SL - An exception occured while attempting to serialize transmit container.");
+                            DeviceServer.logger.AppendLog("SL - An exception occured while attempting to serialize transmit container.");
 
-                            DebugWriter.AppendLog(ex.Message);
+                            DeviceServer.logger.AppendLog(ex.Message);
 
                             break;
                         }

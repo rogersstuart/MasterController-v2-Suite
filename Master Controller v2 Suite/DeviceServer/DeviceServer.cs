@@ -1,4 +1,5 @@
-﻿using System;
+﻿using GlobalUtilities;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -14,6 +15,8 @@ namespace DeviceServer
 {
     public partial class DeviceServer : ServiceBase
     {
+        internal static FileTextLogger logger = new FileTextLogger(new LoggerOptions { BaseOptions = new LoggerBaseOptions { LogName = "DeviceServerLog.txt"} });
+
         public DeviceServer()
         {
             InitializeComponent();
@@ -21,14 +24,14 @@ namespace DeviceServer
             var version_strings = Assembly.GetExecutingAssembly().GetName().Version.ToString().Split('.');
             var version_string = "DeviceServer v" + version_strings[0] + "." + version_strings[1] + " Prerelease " + version_strings[2] + "." + version_strings[3];
 
-            ServiceLog.AppendLog(DateTime.Now, version_string);
-            ServiceLog.AppendLog(DateTime.Now, "Service - Starting");
+            logger.AppendLog(DateTime.Now, version_string);
+            logger.AppendLog(DateTime.Now, "Service - Starting");
 
             DeviceConnectionManager.Start();
             ServerAdvertiser.Start();
             ServerListener.Start();
 
-            ServiceLog.AppendLog(DateTime.Now, "Service - Started");
+            logger.AppendLog(DateTime.Now, "Service - Started");
         }
 
         protected override void OnStart(string[] args)
@@ -36,14 +39,14 @@ namespace DeviceServer
             var version_strings = Assembly.GetExecutingAssembly().GetName().Version.ToString().Split('.');
             var version_string = "DeviceServer v" + version_strings[0] + "." + version_strings[1] + " Prerelease " + version_strings[2] + "." + version_strings[3];
 
-            ServiceLog.AppendLog(DateTime.Now, version_string);
-            ServiceLog.AppendLog(DateTime.Now, "Service - Starting");
+            logger.AppendLog(DateTime.Now, version_string);
+            logger.AppendLog(DateTime.Now, "Service - Starting");
 
             DeviceConnectionManager.Start();
             ServerAdvertiser.Start();
             ServerListener.Start();
 
-            ServiceLog.AppendLog(DateTime.Now, "Service - Started");
+            logger.AppendLog(DateTime.Now, "Service - Started");
         }
 
         protected override void OnStop()
@@ -53,8 +56,8 @@ namespace DeviceServer
                 var version_strings = Assembly.GetExecutingAssembly().GetName().Version.ToString().Split('.');
                 var version_string = "DeviceServer v" + version_strings[0] + "." + version_strings[1] + " Prerelease " + version_strings[2] + "." + version_strings[3];
 
-                ServiceLog.AppendLog(DateTime.Now, version_string);
-                ServiceLog.AppendLog(DateTime.Now, "Service - Stopping");
+                logger.AppendLog(DateTime.Now, version_string);
+                logger.AppendLog(DateTime.Now, "Service - Stopping");
 
                 var handle = ServerListener.Stop();
                 handle.WaitOne();
@@ -65,7 +68,7 @@ namespace DeviceServer
                 handle = DeviceConnectionManager.Stop();
                 handle.WaitOne();
 
-                ServiceLog.AppendLog(DateTime.Now, "Service - Stopped");
+                logger.AppendLog(DateTime.Now, "Service - Stopped");
             });
         }
     }

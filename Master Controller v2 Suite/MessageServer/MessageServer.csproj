@@ -193,6 +193,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\GlobalUtilities\GlobalUtilities.csproj">
+      <Project>{5522246d-7b98-4f67-b19c-43ce8b5ef37c}</Project>
+      <Name>GlobalUtilities</Name>
+    </ProjectReference>
     <ProjectReference Include="..\MCICommon\MCICommon.csproj">
       <Project>{4a875f38-cd7d-4286-8edb-c463da461ac7}</Project>
       <Name>MCICommon</Name>

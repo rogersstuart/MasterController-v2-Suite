@@ -10,6 +10,7 @@ using System.Runtime.Serialization;
 using System.Xml;
 using System.IO;
 using MCICommon;
+using GlobalUtilities;
 
 namespace DeviceServer
 {
@@ -25,7 +26,7 @@ namespace DeviceServer
 
         public static void Start()
         {
-            ServiceLog.AppendLog(DateTime.Now, "SA - Starting");
+            DeviceServer.logger.AppendLog(DateTime.Now, "SA - Starting");
 
             var config = MCv2Persistance.Config;
 
@@ -46,12 +47,12 @@ namespace DeviceServer
 
             refresh_timer.Start();
 
-            ServiceLog.AppendLog(DateTime.Now, "SA - Started");
+            DeviceServer.logger.AppendLog(DateTime.Now, "SA - Started");
         }
 
         public static AutoResetEvent Stop()
         {
-            ServiceLog.AppendLog(DateTime.Now, "SA - Stopping");
+            DeviceServer.logger.AppendLog(DateTime.Now, "SA - Stopping");
 
             var are = new AutoResetEvent(false);
 
@@ -65,7 +66,7 @@ namespace DeviceServer
 
                 are.Set();
 
-                ServiceLog.AppendLog(DateTime.Now, "SA - Stopped");
+                DeviceServer.logger.AppendLog(DateTime.Now, "SA - Stopped");
             });
 
             return are;
@@ -85,7 +86,7 @@ namespace DeviceServer
                 if (udp_client != null)
                     udp_client.Close();
 
-                ServiceLog.AppendLog(DateTime.Now, "SA - An error occured while opening a broadcast client. Holding off for 1 minute.");
+                DeviceServer.logger.AppendLog(DateTime.Now, "SA - An error occured while opening a broadcast client. Holding off for 1 minute.");
                 await Task.Delay(60000);
 
                 return;
@@ -113,7 +114,7 @@ namespace DeviceServer
                 }
                 catch (Exception ex)
                 {
-                    ServiceLog.AppendLog(DateTime.Now, "SA - Ann error occured during HostInfo serialization.");
+                    DeviceServer.logger.AppendLog(DateTime.Now, "SA - Ann error occured during HostInfo serialization.");
                     return;
                 }
 
@@ -131,7 +132,7 @@ namespace DeviceServer
                 if (udp_client != null)
                     udp_client.Close();
 
-                ServiceLog.AppendLog(DateTime.Now, "SA - An error occured while sending the HostInfo message. Holding off for 1 minute.");
+                DeviceServer.logger.AppendLog(DateTime.Now, "SA - An error occured while sending the HostInfo message. Holding off for 1 minute.");
                 await Task.Delay(60000);
             }
 

@@ -7,6 +7,7 @@ using System.IO;
 using System.Net.Sockets;
 using System.Threading;
 using System.Diagnostics;
+using GlobalUtilities;
 
 namespace MCICommon
 {
@@ -48,7 +49,7 @@ namespace MCICommon
         {
             return Task.Run(async () =>
             {
-                DebugWriter.AppendLog("LEC, COM - Started Communications Loop");
+                FileTextLogger.logger.AppendLog("LEC, COM - Started Communications Loop");
 
                 long total_errors = 0;
 
@@ -63,8 +64,8 @@ namespace MCICommon
                     if (transmit_queue_size > 0)
                     {
                         comm_busy = true;
-                        DebugWriter.AppendLog("LEC, COM - Transmit Queue Size = " + transmit_queue_size);
-                        DebugWriter.AppendLog("LEC, COM - Buffer Size = " + cur_command_buf_size);
+                        FileTextLogger.logger.AppendLog("LEC, COM - Transmit Queue Size = " + transmit_queue_size);
+                        FileTextLogger.logger.AppendLog("LEC, COM - Buffer Size = " + cur_command_buf_size);
                         //Console.WriteLine(transmit_queue_size);
                         //Console.WriteLine("buf size =" + cur_command_buf_size);
 
@@ -83,7 +84,7 @@ namespace MCICommon
                                 while (comm_running)
                                 {
                                     //Console.WriteLine("rep_counter " + rep_counter);
-                                    DebugWriter.AppendLog("LEC, COM - rep_counter = " + rep_counter);
+                                    FileTextLogger.logger.AppendLog("LEC, COM - rep_counter = " + rep_counter);
 
                                     //BlockingConnectionReset();
 
@@ -126,7 +127,7 @@ namespace MCICommon
                                     }
                                     catch (Exception ex)
                                     {
-                                        DebugWriter.AppendLog("LEC, COM - Process Command Failure");
+                                        FileTextLogger.logger.AppendLog("LEC, COM - Process Command Failure");
                                         //Console.WriteLine("Process Command Failure ");
                                         rep_counter++;
                                         break;
@@ -152,7 +153,7 @@ namespace MCICommon
                         await process_command();
 
                         //Console.WriteLine("Expander queue size:" + cur_command_buf_size);
-                        DebugWriter.AppendLog("LEC, COM - Expander queue size = " + cur_command_buf_size);
+                        FileTextLogger.logger.AppendLog("LEC, COM - Expander queue size = " + cur_command_buf_size);
 
                         if (rep_counter == 0)
                         {
@@ -163,7 +164,7 @@ namespace MCICommon
                             total_errors++;
 
                         //Console.WriteLine("total errors " + total_errors);
-                        DebugWriter.AppendLog("LEC, COM - total errors = " + total_errors);
+                        FileTextLogger.logger.AppendLog("LEC, COM - total errors = " + total_errors);
 
                         foreach (ExpanderCommandHandle cmdhdl in current_commands)
                             cmdhdl.Handle.Set();
@@ -194,16 +195,16 @@ namespace MCICommon
                 if (netStream == null || CloseConnection())
                     break;
                 else
-                    DebugWriter.AppendLog("LEC - Failed To Close Connection");
+                    FileTextLogger.logger.AppendLog("LEC - Failed To Close Connection");
             //Console.WriteLine("Failed To Close Connection");
 
             while (true)
                 if (OpenConnection())
                     break;
                 else
-                    DebugWriter.AppendLog("LEC - Failed To Open Connection");
+                    FileTextLogger.logger.AppendLog("LEC - Failed To Open Connection");
 
-            DebugWriter.AppendLog("LEC - Connection Reset Was Successful");
+            FileTextLogger.logger.AppendLog("LEC - Connection Reset Was Successful");
         }
 
         private bool OpenConnection()
@@ -217,14 +218,14 @@ namespace MCICommon
                 netStream.ReadTimeout = 2000;
                 netStream.WriteTimeout = 200;
 
-                DebugWriter.AppendLog("LEC - Connection Opened");
+                FileTextLogger.logger.AppendLog("LEC - Connection Opened");
 
                 return true;
             }
             catch (Exception ex)
             {
                 //Console.WriteLine("Error Opening Connection and Stream");
-                DebugWriter.AppendLog("Error Opening Connection and Stream");
+                FileTextLogger.logger.AppendLog("Error Opening Connection and Stream");
 
                 return false;
             }
@@ -239,14 +240,14 @@ namespace MCICommon
                 if(tcpClient != null)
                     tcpClient.Close();
 
-                DebugWriter.AppendLog("LEC - Connection Closed");
+                FileTextLogger.logger.AppendLog("LEC - Connection Closed");
 
                 return true;
             }
             catch (Exception ex)
             {
                 //Console.WriteLine("Error Closing Stream and Connection");
-                DebugWriter.AppendLog("Error Closing Stream and Connection");
+                FileTextLogger.logger.AppendLog("Error Closing Stream and Connection");
 
                 return false;
             }
@@ -262,11 +263,11 @@ namespace MCICommon
                 sw.Start();
                 var t = new System.Timers.Timer(1000);
                 t.AutoReset = true;
-                t.Elapsed += (a, b) => { DebugWriter.AppendLog("LEC - Waiting for simplex-command execution to complete. " + TimeSpan.FromTicks(sw.ElapsedTicks).ToString()); };
+                t.Elapsed += (a, b) => { FileTextLogger.logger.AppendLog("LEC - Waiting for simplex-command execution to complete. " + TimeSpan.FromTicks(sw.ElapsedTicks).ToString()); };
                 t.Start();
 
-                DebugWriter.AppendLog("LEC - connecting to = " + connprop.IPAddress + " " + connprop.TCPPort);
-                DebugWriter.AppendLog("LEC - executing command");
+                FileTextLogger.logger.AppendLog("LEC - connecting to = " + connprop.IPAddress + " " + connprop.TCPPort);
+                FileTextLogger.logger.AppendLog("LEC - executing command");
 
                 lock (pending_command_queue_lock)
                     pending_command_queue.Enqueue(cmdhdl);
@@ -274,7 +275,7 @@ namespace MCICommon
                 sw.Stop();
                 t.Stop();
 
-                DebugWriter.AppendLog("LEC, SCE - Command Enqueued");
+                FileTextLogger.logger.AppendLog("LEC, SCE - Command Enqueued");
             });
 
             return cmdhdl;
@@ -292,7 +293,7 @@ namespace MCICommon
                 sw.Start();
                 var t = new System.Timers.Timer(1000);
                 t.AutoReset = true;
-                t.Elapsed += (a, b) => { DebugWriter.AppendLog("LEC - Waiting for multi-command execution to complete." + TimeSpan.FromTicks(sw.ElapsedTicks).ToString()); };
+                t.Elapsed += (a, b) => { FileTextLogger.logger.AppendLog("LEC - Waiting for multi-command execution to complete." + TimeSpan.FromTicks(sw.ElapsedTicks).ToString()); };
                 t.Start();
 
                 lock (pending_command_queue_lock)
@@ -302,7 +303,7 @@ namespace MCICommon
                 sw.Stop();
                 t.Stop();
 
-                DebugWriter.AppendLog("LEC, MCE - Commands Enqueued");
+                FileTextLogger.logger.AppendLog("LEC, MCE - Commands Enqueued");
             });
 
             return cmdhdls;

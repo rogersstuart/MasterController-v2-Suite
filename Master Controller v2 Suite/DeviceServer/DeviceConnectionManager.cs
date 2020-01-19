@@ -23,7 +23,7 @@ namespace DeviceServer
 
         public static void Start()
         {
-            ServiceLog.AppendLog(DateTime.Now, "DCM - Starting");
+            DeviceServer.logger.AppendLog(DateTime.Now, "DCM - Starting");
 
             RefreshDevices();
 
@@ -41,12 +41,12 @@ namespace DeviceServer
 
             refresh_timer.Start();
 
-            ServiceLog.AppendLog(DateTime.Now, "DCM - Started");
+            DeviceServer.logger.AppendLog(DateTime.Now, "DCM - Started");
         }
 
         public static AutoResetEvent Stop()
         {
-            ServiceLog.AppendLog(DateTime.Now, "DCM - Stopping");
+            DeviceServer.logger.AppendLog(DateTime.Now, "DCM - Stopping");
 
             var are = new AutoResetEvent(false);
 
@@ -60,7 +60,7 @@ namespace DeviceServer
 
                 are.Set();
 
-                ServiceLog.AppendLog(DateTime.Now, "DCM - Stopped");
+                DeviceServer.logger.AppendLog(DateTime.Now, "DCM - Stopped");
             });
 
             return are;
@@ -96,7 +96,7 @@ namespace DeviceServer
                         expcons_connprops.Remove(exp_id);
                         expcons.Remove(exp_id);
 
-                        ServiceLog.AppendLog(DateTime.Now, "DCM - Dropped " + exp_id);
+                        DeviceServer.logger.AppendLog(DateTime.Now, "DCM - Dropped " + exp_id);
                     }
 
                     //create a list of new expander ids
@@ -116,7 +116,7 @@ namespace DeviceServer
                         expcons_connprops.Add(exp_id, connection_info);
                         expcons.Add(exp_id, expcon);
 
-                        ServiceLog.AppendLog(DateTime.Now, "DCM - Added " + exp_id);
+                        DeviceServer.logger.AppendLog(DateTime.Now, "DCM - Added " + exp_id);
                     }
 
                     //create a list of expanders that were already active and are still present in the database
@@ -138,13 +138,13 @@ namespace DeviceServer
 
                             //await expcons[exp_id].Start();
 
-                            ServiceLog.AppendLog(DateTime.Now, "DCM - Modified " + exp_id);
+                            DeviceServer.logger.AppendLog(DateTime.Now, "DCM - Modified " + exp_id);
                         }
                     }
                 }
                 catch (Exception ex)
                 {
-                    ServiceLog.AppendLog(DateTime.Now, "DCM - A fatal error occured while attempting to refresh devices");
+                    DeviceServer.logger.AppendLog(DateTime.Now, "DCM - A fatal error occured while attempting to refresh devices");
                 }
 
                 if (sqlconn != null)

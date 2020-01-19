@@ -6,6 +6,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Serialization;
+using GlobalUtilities;
 
 namespace MCICommon
 {
@@ -29,8 +30,8 @@ namespace MCICommon
             }
             catch(Exception ex)
             {
-                DebugWriter.AppendLog("XMLSerdes - Failed To Send Packet");
-                DebugWriter.AppendLog(ex.Message);
+                FileTextLogger.logger.AppendLog("XMLSerdes - Failed To Send Packet");
+                FileTextLogger.logger.AppendLog(ex.Message);
                 throw;
             }
         }
@@ -66,8 +67,8 @@ namespace MCICommon
             }
             catch(Exception ex)
             {
-                DebugWriter.AppendLog("XMLSerdes - Failed To Receive Packet");
-                DebugWriter.AppendLog(ex.Message);
+                FileTextLogger.logger.AppendLog("XMLSerdes - Failed To Receive Packet");
+                FileTextLogger.logger.AppendLog(ex.Message);
                 throw;
             }
         }
@@ -86,8 +87,8 @@ namespace MCICommon
             }
             catch(Exception ex)
             {
-                DebugWriter.AppendLog("XMLSerdes - Failed To Decode Packet");
-                DebugWriter.AppendLog(ex.Message);
+                FileTextLogger.logger.AppendLog("XMLSerdes - Failed To Decode Packet");
+                FileTextLogger.logger.AppendLog(ex.Message);
                 throw;
             }
         }
