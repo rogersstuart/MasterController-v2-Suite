@@ -1,7 +1,8 @@
 {
   "ExpandedNodes": [
     "",
-    "\\Master Controller v2 Suite"
+    "\\Master Controller v2 Suite",
+    "\\Master Controller v2 Suite\\MasterControllerInterface"
   ],
   "SelectedNode": "\\Master Controller v2 Suite\\Master Controller v2 Suite.sln",
   "PreviewInSolutionExplorer": false

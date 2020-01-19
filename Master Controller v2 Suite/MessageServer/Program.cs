@@ -5,8 +5,9 @@ using System.Text;
 using System.Threading.Tasks;
 using MCICommon;
 using System.Threading;
-using uPLibrary.Networking.M2Mqtt;
-using uPLibrary.Networking.M2Mqtt.Messages;
+using MQTTnet.Client;
+using MQTTnet;
+using MQTTnet.Client.Options;
 
 namespace MessageServer
 {
@@ -34,13 +35,32 @@ namespace MessageServer
                 //var client = new uPLibrary.Networking.M2Mqtt.MqttClient("127.0.0.1");
                 //client.Connect(Guid.NewGuid().ToString(), "USER", "PASS");
 
-                var client = new MqttClient("192.168.0.31");
-                
-                //DeviceServerTracker.Start();
+                // Create a new MQTT client.
+                var factory = new MqttFactory();
+                var mqttClient = factory.CreateMqttClient();
 
-                //while (DeviceServerTracker.DeviceServerHostInfo == null)
-                //    await Task.Delay(100);
+                var options = new MqttClientOptionsBuilder()
+                .WithTcpServer("192.168.0.31")
+                .WithTls()
+                .Build();
 
+                //handle disconnection
+                mqttClient.UseDisconnectedHandler(async e =>
+                {
+                    Console.WriteLine("### DISCONNECTED FROM SERVER ###");
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+
+                    try
+                    {
+                        await mqttClient.ConnectAsync(options, CancellationToken.None); // Since 3.0.5 with CancellationToken
+                    }
+                    catch
+                    {
+                        Console.WriteLine("### RECONNECTING FAILED ###");
+                    }
+                });
+
+                //connect to expander
                 rem = new RemoteExpanderMonitor(8230500780121598431);
 
                 write_timer.AutoReset = false;
@@ -67,79 +87,144 @@ namespace MessageServer
 
                 rem.freshstateevent += (a, b) =>
                 {
-                    Task.Run(() =>
+                    Task.Run(async () =>
                     {
                         try
                         {
+                            MqttApplicationMessage message;
+
                             //floor states
                             //Console.WriteLine("Publishing Message");
                             for (int car_val = 1; car_val < 3; car_val++)
                                 for (int floor_val = 1; floor_val < 15; floor_val++)
-                                    client.Publish("access_control/elevator/car_" + car_val + "/floor_" + floor_val + "/get",
-                                                                            new byte[] {(car_val == 1 ?
-                                                                        b.ExpanderState.Expander0State[floor_val-1] : b.ExpanderState.Expander1State[floor_val - 1]) ?
-                                                                        (byte)'1' : (byte)'0' });
+                                {
+                                    message = new MqttApplicationMessageBuilder()
+                                    .WithTopic("access_control/elevator/car_" + car_val + "/floor_" + floor_val + "/get")
+                                    .WithPayload(new byte[] {(car_val == 1 ? b.ExpanderState.Expander0State[floor_val-1] : b.ExpanderState.Expander1State[floor_val - 1]) ? (byte)'1' : (byte)'0' })
+                                    .WithExactlyOnceQoS()
+                                    .WithRetainFlag()
+                                    .Build();
+
+                                    await mqttClient.PublishAsync(message);
+                                }
+
+                            Queue<mqtt_container> mqtt_tx = new Queue<mqtt_container>();
 
                             //expander 0 temp
-                            client.Publish("access_control/elevator/expander/operational_status/expander_0_temperature/get", Encoding.ASCII.GetBytes(b.ExpanderState.Board0Temperature + ""));
+                            mqtt_tx.Enqueue(new mqtt_container
+                            {
+                                c_topic = "access_control/elevator/expander/operational_status/expander_0_temperature/get",
+                                c_payload = Encoding.ASCII.GetBytes(b.ExpanderState.Board0Temperature + "")
+                            });
+
                             //expander 1 temp
-                            client.Publish("access_control/elevator/expander/operational_status/expander_1_temperature/get", Encoding.ASCII.GetBytes(b.ExpanderState.Board1Temperature + ""));
+                            mqtt_tx.Enqueue(new mqtt_container
+                            {
+                                c_topic = "access_control/elevator/expander/operational_status/expander_1_temperature/get",
+                                c_payload = Encoding.ASCII.GetBytes(b.ExpanderState.Board1Temperature + "")
+                            });
 
                             //fan temp
-                            client.Publish("access_control/elevator/expander/operational_status/fan_temperature/get", Encoding.ASCII.GetBytes(b.ExpanderState.FanTemperature + ""));
+                            mqtt_tx.Enqueue(new mqtt_container
+                            {
+                                c_topic = "access_control/elevator/expander/operational_status/fan_temperature/get",
+                                c_payload = Encoding.ASCII.GetBytes(b.ExpanderState.FanTemperature + "")
+                            });
+
                             //fan speed
-                            client.Publish("access_control/elevator/expander/operational_status/fan_speed/get", Encoding.ASCII.GetBytes(b.ExpanderState.FanSpeed + ""));
+                            mqtt_tx.Enqueue(new mqtt_container
+                            {
+                                c_topic = "access_control/elevator/expander/operational_status/fan_speed/get",
+                                c_payload = Encoding.ASCII.GetBytes(b.ExpanderState.FanSpeed + "")
+                            });
 
                             //bus power
-                            client.Publish("access_control/elevator/expander/operational_status/bus_power/get", Encoding.ASCII.GetBytes(b.ExpanderState.BusPower + ""));
+                            mqtt_tx.Enqueue(new mqtt_container
+                            {
+                                c_topic = "access_control/elevator/expander/operational_status/bus_power/get",
+                                c_payload = Encoding.ASCII.GetBytes(b.ExpanderState.BusPower + "")
+                            });
+
                             //bus voltage
-                            client.Publish("access_control/elevator/expander/operational_status/bus_voltage/get", Encoding.ASCII.GetBytes(b.ExpanderState.BusVoltage + ""));
+                            mqtt_tx.Enqueue(new mqtt_container
+                            {
+                                c_topic = "access_control/elevator/expander/operational_status/bus_voltage/get",
+                                c_payload = Encoding.ASCII.GetBytes(b.ExpanderState.BusVoltage + "")
+                            });
 
                             //uptime
-                            client.Publish("access_control/elevator/expander/operational_status/uptime/get", Encoding.ASCII.GetBytes(b.ExpanderState.Uptime + ""));
-
+                            mqtt_tx.Enqueue(new mqtt_container
+                            {
+                                c_topic = "access_control/elevator/expander/operational_status/uptime/get",
+                                c_payload = Encoding.ASCII.GetBytes(b.ExpanderState.Uptime + "")
+                            });
 
                             //expander state timestamp
-                            client.Publish("access_control/elevator/expander/operational_status/last_state_timestamp/get", Encoding.ASCII.GetBytes(b.ExpanderState.Timestamp.ToString()));
+                            mqtt_tx.Enqueue(new mqtt_container
+                            {
+                                c_topic = "access_control/elevator/expander/operational_status/last_state_timestamp/get",
+                                c_payload = Encoding.ASCII.GetBytes(b.ExpanderState.Timestamp.ToString())
+                            });
+
+                            foreach(mqtt_container c in mqtt_tx)
+                            {
+                                message = new MqttApplicationMessageBuilder()
+                                .WithTopic(c.c_topic)
+                                .WithPayload(c.c_payload)
+                                .WithExactlyOnceQoS()
+                                .WithRetainFlag()
+                                .Build();
+
+                                await mqttClient.PublishAsync(message);
+                            }
                         }
                         catch (Exception ex)
                         {
                             DebugWriter.AppendLog("MessageServer - An error occured while publishing status message.");
                             DebugWriter.AppendLog(ex.Message);
                         }
-
                     });
-
-
-                    //client.Disconnect();
                 };
-
 
                 List<string> topics = new List<string>();
                 for (int car_val = 1; car_val < 3; car_val++)
                     for (int floor_val = 1; floor_val < 15; floor_val++)
                         topics.Add("access_control/elevator/car_" + car_val + "/floor_" + floor_val + "/set");
 
-                foreach (var topic in topics)
-                    client.Subscribe(new string[] { topic }, new byte[] { 0 });
+                //subscribe to topics
+                mqttClient.UseConnectedHandler(async e =>
+                {
+                    foreach (var topic in topics)
+                        await mqttClient.SubscribeAsync(new TopicFilterBuilder().WithTopic(topic).Build());
+                });
 
-                client.MqttMsgPublishReceived += (a, b) =>
+                //received message handler
+                mqttClient.UseApplicationMessageReceivedHandler(e =>
                 {
                     Task.Run(() =>
                     {
-                        if (topics.Contains(b.Topic))
+                        if (topics.Contains(e.ApplicationMessage.Topic))
                         {
-                            var substrs = b.Topic.Split('/');
+                            var substrs = e.ApplicationMessage.Topic.Split('/');
 
                             int car_val = Convert.ToInt32(substrs[2].Split('_')[1]) - 1;
                             int floor_val = Convert.ToInt32(substrs[3].Split('_')[1]) - 1;
 
-                            RelaySet(b.Message[0] == '1', car_val, floor_val);
+                            RelaySet(e.ApplicationMessage.Payload[0] == '1', car_val, floor_val);
                         }
                     });
-                };
 
-                client.Connect(Guid.NewGuid().ToString());
+                    /*
+                    Console.WriteLine("### RECEIVED APPLICATION MESSAGE ###");
+                    Console.WriteLine($"+ Topic = {e.ApplicationMessage.Topic}");
+                    Console.WriteLine($"+ Payload = {Encoding.UTF8.GetString(e.ApplicationMessage.Payload)}");
+                    Console.WriteLine($"+ QoS = {e.ApplicationMessage.QualityOfServiceLevel}");
+                    Console.WriteLine($"+ Retain = {e.ApplicationMessage.Retain}");
+                    Console.WriteLine();
+                    */
+                });
+
+                await mqttClient.ConnectAsync(options, CancellationToken.None);
 
                 Console.WriteLine("Starting Remote Monitor");
 
@@ -149,6 +234,18 @@ namespace MessageServer
             });
 
             Thread.Sleep(-1);
+        }
+
+        struct mqtt_container
+        {
+            internal string c_topic;
+            internal byte[] c_payload;
+
+            internal mqtt_container(string c_topic, byte[] c_payload)
+            {
+                this.c_topic = c_topic;
+                this.c_payload = c_payload;
+            }
         }
 
         private static void RelaySet(bool val, int expander_num, int relay_index)

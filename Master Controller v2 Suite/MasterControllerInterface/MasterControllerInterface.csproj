@@ -344,18 +344,6 @@
     <Compile Include="TCPConnectionDialog.Designer.cs">
       <DependentUpon>TCPConnectionDialog.cs</DependentUpon>
     </Compile>
-    <Compile Include="TextBoxDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TextBoxDialog.Designer.cs">
-      <DependentUpon>TextBoxDialog.cs</DependentUpon>
-    </Compile>
-    <Compile Include="TextEditorDialog.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="TextEditorDialog.Designer.cs">
-      <DependentUpon>TextEditorDialog.cs</DependentUpon>
-    </Compile>
     <Compile Include="TransactionException.cs" />
     <Compile Include="UserEditorForm.cs">
       <SubType>Form</SubType>
@@ -465,12 +453,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="TCPConnectionDialog.resx">
       <DependentUpon>TCPConnectionDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="TextBoxDialog.resx">
-      <DependentUpon>TextBoxDialog.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="TextEditorDialog.resx">
-      <DependentUpon>TextEditorDialog.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UserEditorForm.resx">
       <DependentUpon>UserEditorForm.cs</DependentUpon>
