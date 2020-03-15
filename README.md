@@ -1,4 +1,7 @@
 # MasterController-v2-Suite
+
+This really needs Entity Framework
+
 This is very messy. :/ Please ignore it for now. I need to find time to work on this project. I kind of just took it out of TFS and dumped it here.
 
 The purpose of this software is to generate binary files and upload them to "offline controllers."
