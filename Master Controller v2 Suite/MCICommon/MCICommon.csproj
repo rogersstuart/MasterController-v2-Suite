@@ -119,11 +119,14 @@
     <Compile Include="Configuration\ConfigurationManager.cs" />
     <Compile Include="Configuration\MCv2Persistance.cs" />
     <Compile Include="ConnectionProperties.cs" />
+    <Compile Include="DatabaseConnectionExtensions.cs" />
     <Compile Include="DatabaseConnectionProperties.cs" />
+    <Compile Include="Database\DatabaseClasses\DatabaseConnectionProperties.cs" />
     <Compile Include="Database\Utilities\DatabaseUtilities.cs" />
     <Compile Include="Database\Utilities\UserDBUtilities.cs" />
     <Compile Include="DBCard.cs" />
     <Compile Include="DeviceServerTracker.cs" />
+    <Compile Include="DictionaryExtensions.cs" />
     <Compile Include="Expander\Common\ExpanderCommandTransactionContainer.cs" />
     <Compile Include="Expander\Common\ExpanderCommand.cs" />
     <Compile Include="Expander\Common\ExpanderCommandHandle.cs" />

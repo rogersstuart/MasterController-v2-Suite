@@ -117,7 +117,7 @@ namespace MasterControllerInterface
                 return;
             }
 
-            if(await TestHostnameOrIP(text_box_strings[0]))
+            if (await TestHostnameOrIP(text_box_strings[0]))
             {
                 if (IsHandleCreated)
                     Invoke((MethodInvoker)(() =>
@@ -357,22 +357,34 @@ namespace MasterControllerInterface
             pgd.Show();
             pgd.SetMarqueeStyle();
 
+            var errors = new List<string>();
+
             foreach (var file in files_to_import)
             {
                 pgd.LabelText = "Processing " + file;
 
                 try
                 {
-                    await DBBackupAndRestore.Restore(file, DatabaseConnectionProperties.FromArray(GetTextBoxStrings()));
+                    await DBBackupAndRestore.Restore(file);
                 }
                 catch (Exception ex)
                 {
-                    MessageBox.Show("An error occured while restoring from " + file + ".");
+                    errors.Add($"{Path.GetFileName(file)}: {ex.Message}");
                 }
-
             }
 
             pgd.Dispose();
+
+            if (errors.Count > 0)
+            {
+                MessageBox.Show($"Some files failed to restore:\n\n{string.Join("\n", errors)}", 
+                               "Restore Errors", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
+            else if (files_to_import.Count > 0)
+            {
+                MessageBox.Show("All files restored successfully!", "Success", 
+                               MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -380,7 +392,7 @@ namespace MasterControllerInterface
             DialogResult = DialogResult.Abort;
         }
 
-        private async void restoreDBFromAutosaveToolStripMenuItem_Click(object sender, EventArgs e)
+        private void restoreDBFromAutosaveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             var config = MCv2Persistance.Instance.Config;
             config.DatabaseConfiguration.DatabaseConnectionProperties = DBConnProp;

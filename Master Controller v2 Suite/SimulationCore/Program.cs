@@ -1,4 +1,7 @@
 ﻿using System;
+using System.Text;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SimulationCore
 {
@@ -6,7 +9,11 @@ namespace SimulationCore
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            var server = new OfflineControllerServer(5000); // Choose a port
+            server.Start();
+            Console.WriteLine("Press Enter to exit...");
+            Console.ReadLine();
+            server.Stop();
         }
     }
 }

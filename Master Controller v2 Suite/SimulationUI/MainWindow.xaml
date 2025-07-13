@@ -1,12 +1,22 @@
 ﻿<Window x:Class="SimulationUI.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:SimulationUI"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Offline Controller Simulator" Height="350" Width="400">
     <Grid>
-
+        <StackPanel Margin="20" VerticalAlignment="Top">
+            <TextBlock Text="Offline Controller Simulator" FontSize="18" FontWeight="Bold" Margin="0,0,0,10"/>
+            <Button Name="btnStart" Content="Start Simulation" Click="btnStart_Click" Margin="0,0,0,5"/>
+            <Button Name="btnStop" Content="Stop Simulation" Click="btnStop_Click" Margin="0,0,0,15"/>
+            <Button Name="btnPresentCard" Content="Present Card" Click="btnPresentCard_Click" Margin="0,0,0,5"/>
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,5">
+                <Button Name="btnGetOutputs" Content="Get Outputs" Click="btnGetOutputs_Click" Margin="0,0,5,0"/>
+                <CheckBox Name="chkOutput" Content="Set Output On" Margin="0,0,5,0"/>
+                <Button Name="btnSetOutputs" Content="Set Outputs" Click="btnSetOutputs_Click"/>
+            </StackPanel>
+            <TextBlock Text="Status:" FontWeight="Bold" Margin="0,10,0,0"/>
+            <TextBox Name="txtStatus" IsReadOnly="True" Margin="0,0,0,5"/>
+            <TextBlock Text="Last Response:" FontWeight="Bold"/>
+            <TextBox Name="txtResponse" IsReadOnly="True" Margin="0,0,0,5"/>
+        </StackPanel>
     </Grid>
 </Window>

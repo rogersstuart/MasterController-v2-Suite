@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29709.97
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36301.6 d17.14
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MasterControllerInterface", "MasterControllerInterface\MasterControllerInterface.csproj", "{D514A234-FA58-4E55-8BA0-CF1369572376}"
 EndProject
@@ -20,6 +20,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SIP_CallOut", "SIP_CallOut\SIP_CallOut.csproj", "{29031782-3CF5-4C31-9406-0AFAC3E8F8C0}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulationUI", "SimulationUI\SimulationUI.csproj", "{35C245D2-D6DF-4676-A0C3-D43C5FE26E6A}"
+	ProjectSection(ProjectDependencies) = postProject
+		{C1B7D947-842A-4D7F-8B40-849165788A3A} = {C1B7D947-842A-4D7F-8B40-849165788A3A}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimulationCore", "SimulationCore\SimulationCore.csproj", "{C1B7D947-842A-4D7F-8B40-849165788A3A}"
 EndProject

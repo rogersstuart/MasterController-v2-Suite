@@ -557,17 +557,24 @@ namespace MCICommon
             {
                 Dictionary<UInt64, string> list_descriptions = new Dictionary<UInt64, string>();
 
+                // Check if lists table exists
+                var tables = await GetTableNames(sqlconn);
+                if (!tables.Contains("lists"))
+                {
+                    return list_descriptions; // Return empty dictionary if table doesn't exist
+                }
+
                 string cmd = "";
 
                 if (limiter != "")
-                    cmd = "SELECT * FROM `lists` WHERE (uid like '%@limiter%' or alias like '%@limiter%') and type=@type;";
+                    cmd = "SELECT * FROM `lists` WHERE (uid like @limiter or alias like @limiter) and type=@type;";
                 else
                     cmd = "SELECT * FROM `lists` WHERE type=@type;";
 
                 using (MySqlCommand sqlcmd = new MySqlCommand(cmd, sqlconn))
                 {
                     if (limiter != "")
-                        sqlcmd.Parameters.AddWithValue("@limiter", limiter);
+                        sqlcmd.Parameters.AddWithValue("@limiter", "%" + limiter + "%");
 
                     sqlcmd.Parameters.AddWithValue("@type", type);
 
@@ -969,6 +976,7 @@ namespace MCICommon
                             user_descriptions.Add(ruid, dstr);
                         }
                 }
+
                 return user_descriptions;
             }));
         }

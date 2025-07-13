@@ -998,27 +998,35 @@ namespace MasterControllerInterface
 
         private async void DatabaseManagerForm_Shown(object sender, EventArgs e)
         {
-            watcher = new TableWatcher("users");
-            watcher.tablechangeevent += (a, b) =>
+            try
             {
-                Invoke((MethodInvoker)(() =>
+                watcher = new TableWatcher("users");
+                watcher.tablechangeevent += (a, b) =>
                 {
-                    refreshToolStripMenuItem.BackColor = Color.AliceBlue;
-                    Refresh();
-                }));
-            };
-            watcher.Begin();
+                    Invoke((MethodInvoker)(() =>
+                    {
+                        refreshToolStripMenuItem.BackColor = Color.AliceBlue;
+                        Refresh();
+                    }));
+                };
+                watcher.Begin();
 
-            if (MCv2Persistance.Instance.Config.UIConfiguration.WarnIfNotAdministrator && !IsAdministrator())
-            {
-                var res = MessageBox.Show(this, "Some program functions will be unavailable without administrative permissions." + Environment.NewLine
-                    + "Would you like to reload with elevated permissions?", "Warning", MessageBoxButtons.YesNo);
+                if (MCv2Persistance.Instance.Config.UIConfiguration.WarnIfNotAdministrator && !IsAdministrator())
+                {
+                    var res = MessageBox.Show(this, "Some program functions will be unavailable without administrative permissions." + Environment.NewLine
+                        + "Would you like to reload with elevated permissions?", "Warning", MessageBoxButtons.YesNo);
 
-                if (res == DialogResult.Yes)
-                    RunAsAdministrator();
+                    if (res == DialogResult.Yes)
+                        RunAsAdministrator();
+                }
+
+                await FullUIRefresh();
             }
-
-            await FullUIRefresh();
+            catch (Exception ex)
+            {
+                // Handle database errors by returning to login screen
+                HandleDatabaseError(ex);
+            }
         }
 
         private async void textBox3_KeyDown(object sender, KeyEventArgs e)
@@ -1393,9 +1401,7 @@ namespace MasterControllerInterface
                 ResetListEntryEditor();
                 button3.Enabled = false;
 
-                var tasks = new Task[] { V2LE_UA_ListUsers_Refresh(), V2LE_UA_UserLookup_Refresh() };
-                await Task.WhenAll(tasks);
-
+                await V2LE_UA_ListUsers_Refresh();
                 textBox2.BackColor = SystemColors.Window;
                 Refresh();
                 textBox2.Focus();

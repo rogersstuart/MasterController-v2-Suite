@@ -1,122 +1,305 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Net.Sockets;
 using System.Windows.Forms;
-using uPLibrary.Networking.M2Mqtt;
-using uPLibrary.Networking.M2Mqtt.Messages;
+using System.Threading.Tasks;
+using System.Drawing;
 
 namespace PanelSim
 {
     public partial class Form1 : Form
     {
-        private static MqttClient client = new MqttClient("mccsrv1");
-        private System.Timers.Timer car1timer = new System.Timers.Timer();
-        private System.Timers.Timer car2timer = new System.Timers.Timer();
+        private TcpClient _tcpClient;
+        private NetworkStream _netStream;
 
-        private Color[] colors = {Color.Red, Color.Blue, Color.Green };
+        // Designer controls:
+        // txtIp: IP address input
+        // txtPort: Port input
+        // btnConnect: Connect button
+        // btnDisconnect: Disconnect button
+        // button1: Panel 1 LED
+        // button2: Panel 2 LED
+        // txtStatus: Status display
+        // txtResponse: Response display
+
+        private Timer[] failureTimers = new Timer[2];
+        private const int TimeoutMs = 2000;
 
         public Form1()
         {
             InitializeComponent();
 
-            textBox1.Text = "3449006277";
-            button1.BackColor = Color.Gray;
-            button2.BackColor = Color.Gray;
+            btnConnect.Click += async (s, e) => await ConnectAsync();
+            btnDisconnect.Click += (s, e) => Disconnect();
 
-            car1timer.Interval = 4000;
-            car2timer.Interval = 4000;
+            failureTimers[0] = new Timer();
+            failureTimers[1] = new Timer();
+            failureTimers[0].Tick += (s, e) => { AnimatePanelLed(1, "general_system_failure"); failureTimers[0].Stop(); };
+            failureTimers[1].Tick += (s, e) => { AnimatePanelLed(2, "general_system_failure"); failureTimers[1].Stop(); };
 
-            car1timer.Elapsed += (a,b) =>
-            {
-                Invoke((MethodInvoker)(() =>
-                {
-                    button1.BackColor = Color.Gray;
-                    button1.Enabled = true;
-                }));  
-            };
-            
-            car2timer.Elapsed += (a, b) =>
-            {
-                Invoke((MethodInvoker)(() =>
-                {
-                    button2.BackColor = Color.Gray;
-                    button2.Enabled = true;
-                }));
-            };
+            UpdateUI();
         }
 
-        
-        private async void button1_Click(object sender, EventArgs e)
+        private void UpdateUI()
         {
-            //car 1
+            bool isConnected = _netStream != null;
 
-            button1.Enabled = false;
-            button1.BackColor = Color.Yellow;
+            txtIp.Enabled = !isConnected;
+            txtPort.Enabled = !isConnected;
+            btnConnect.Enabled = !isConnected;
+            btnDisconnect.Enabled = isConnected;
 
-            //convert text to uint64
-            var uid = Convert.ToUInt64(textBox1.Text.Trim());
-            var uid_bytes = BitConverter.GetBytes(uid);
-            uid_bytes = uid_bytes.Reverse().ToArray();
+            button1.Enabled = true;
+            button2.Enabled = true;
 
-            //publish
-            client.Publish("acc/elev/0/rdr/tap", uid_bytes);
+            txtIp.BackColor = txtIp.Enabled ? SystemColors.Window : SystemColors.Control;
+            txtPort.BackColor = txtPort.Enabled ? SystemColors.Window : SystemColors.Control;
 
-            car1timer.Start();
+            txtStatus.Text = isConnected
+                ? $"Connected to {txtIp.Text}:{txtPort.Text}"
+                : "Not connected";
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private async Task ConnectAsync()
         {
-            //car 2
+            try
+            {
+                txtStatus.Text = "Connecting...";
 
-            button2.Enabled = false;
-            button2.BackColor = Color.Yellow;
+                if (!int.TryParse(txtPort.Text, out int port) || port <= 0 || port > 65535)
+                {
+                    txtStatus.Text = "Invalid port number";
+                    return;
+                }
 
-            //convert text to uint64
-            var uid = Convert.ToUInt64(textBox1.Text.Trim());
-            var uid_bytes = BitConverter.GetBytes(uid);
-            uid_bytes = uid_bytes.Reverse().ToArray();
+                _tcpClient = new TcpClient();
+                await _tcpClient.ConnectAsync(txtIp.Text.Trim(), port);
+                _netStream = _tcpClient.GetStream();
+                txtStatus.Text = $"Connected to {txtIp.Text}:{port}";
 
-            //publish
-            client.Publish("acc/elev/1/rdr/tap", uid_bytes);
+                // Cancel any pending failure timers
+                failureTimers[0].Stop();
+                failureTimers[1].Stop();
+            }
+            catch (Exception ex)
+            {
+                txtStatus.Text = "Connection failed: " + ex.Message;
+                if (_tcpClient != null)
+                {
+                    _tcpClient.Close();
+                    _tcpClient = null;
+                }
+                _netStream = null;
+            }
+            finally
+            {
+                UpdateUI();
+            }
+        }
 
-            car2timer.Start();
+        private void Disconnect()
+        {
+            if (_netStream != null)
+            {
+                _netStream.Close();
+                _netStream = null;
+            }
+            if (_tcpClient != null)
+            {
+                _tcpClient.Close();
+                _tcpClient = null;
+            }
+            UpdateUI();
+        }
+
+        // Present card to a specific panel (1 or 2)
+        private async void PresentCard(int panelIndex)
+        {
+            if (_netStream == null)
+            {
+                // Not connected: start timeout for general system failure animation
+                failureTimers[panelIndex - 1].Interval = TimeoutMs;
+                failureTimers[panelIndex - 1].Start();
+                txtStatus.Text = "Waiting for controller...";
+                return;
+            }
+
+            ulong uid = 12345678 + (ulong)panelIndex;
+            byte[] cmd = new byte[9];
+            cmd[0] = (byte)'L';
+            Array.Copy(BitConverter.GetBytes(uid), 0, cmd, 1, 8);
+            await SendCommandAsync(cmd, panelIndex);
+        }
+
+        // Send command and animate LED for the correct panel (when connected)
+        private async Task SendCommandAsync(byte[] cmd, int panelIndex)
+        {
+            try
+            {
+                await _netStream.WriteAsync(cmd, 0, cmd.Length);
+
+                byte[] ack = new byte[3];
+                int ackRead = await _netStream.ReadAsync(ack, 0, 3);
+                if (ackRead != 3 || ack[0] != 0x01 || ack[1] != 0x01 || ack[2] != 0x9A)
+                {
+                    txtStatus.Text = "Invalid ACK received";
+                    return;
+                }
+
+                int respLen = 2;
+                byte[] resp = new byte[respLen];
+                int respRead = await _netStream.ReadAsync(resp, 0, respLen);
+
+                byte[] crc = new byte[1];
+                int crcRead = await _netStream.ReadAsync(crc, 0, 1);
+
+                if (crcRead == 1 && CRC8(resp, respLen) == crc[0])
+                {
+                    txtResponse.Text = GetResponseDescription(resp);
+                    txtStatus.Text = "";
+                    AnimatePanelLed(panelIndex, GetResultType(resp));
+                }
+                else
+                {
+                    txtStatus.Text = "CRC validation failed";
+                }
+            }
+            catch (Exception ex)
+            {
+                txtStatus.Text = "Communication error: " + ex.Message;
+                Disconnect();
+            }
+        }
+
+        private string GetResultType(byte[] resp)
+        {
+            if (resp.Length >= 2)
+            {
+                switch (resp[1])
+                {
+                    case 68: return "card_declined";
+                    case 69: return "card_approved";
+                    case 70: return "alt_card_approved";
+                    default: return "general_system_failure";
+                }
+            }
+            return "general_system_failure";
+        }
+
+        private void AnimatePanelLed(int panelIndex, string animationType)
+        {
+            Button targetButton = panelIndex == 1 ? button1 : button2;
+            Color[] sequence;
+            int[] durations;
+
+            switch (animationType)
+            {
+                case "card_approved":
+                    sequence = new[] { Color.Black, Color.Green, Color.Black };
+                    durations = new[] { 200, 1000, 200 };
+                    break;
+                case "alt_card_approved":
+                    sequence = new[] { Color.Black, Color.Blue, Color.Black };
+                    durations = new[] { 200, 1000, 200 };
+                    break;
+                case "card_declined":
+                    sequence = new[] { Color.Black, Color.Red, Color.Black };
+                    durations = new[] { 200, 1000, 200 };
+                    break;
+                case "general_system_failure":
+                    sequence = new[] { Color.OrangeRed, Color.Black, Color.OrangeRed, Color.Black };
+                    durations = new[] { 250, 250, 250, 250 };
+                    break;
+                case "power_on":
+                    sequence = new[] { Color.Orange, Color.Yellow, Color.LightGreen, Color.LightBlue, Color.Black };
+                    durations = new[] { 250, 250, 250, 250, 250 };
+                    break;
+                default:
+                    sequence = new[] { Color.Black };
+                    durations = new[] { 200 };
+                    break;
+            }
+
+            int step = 0;
+            var timer = new Timer();
+            timer.Interval = durations[step];
+            timer.Tick += (s, e) =>
+            {
+                targetButton.BackColor = sequence[step];
+                step++;
+                if (step >= sequence.Length)
+                {
+                    timer.Stop();
+                    timer.Dispose();
+                }
+                else
+                {
+                    timer.Interval = durations[step];
+                }
+            };
+            timer.Start();
+        }
+
+        public static byte CRC8(byte[] data, int len)
+        {
+            byte crc = 0x00;
+            int data_index_counter = 0;
+            while (len > 0)
+            {
+                len--;
+                byte extract = data[data_index_counter];
+                data_index_counter++;
+
+                for (byte tempI = 8; tempI > 0; tempI--)
+                {
+                    byte sum = Convert.ToByte((crc ^ extract) & 1);
+                    crc >>= 1;
+                    if (sum > 0)
+                    {
+                        crc ^= 0x8C;
+                    }
+                    extract >>= 1;
+                }
+            }
+            return crc;
         }
 
         private void Form1_Shown(object sender, EventArgs e)
         {
-            //shown
+            UpdateUI();
+            AnimatePanelLed(1, "power_on");
+            AnimatePanelLed(2, "power_on");
+        }
 
-            client.MqttMsgPublishReceived += client_MqttMsgPublishReceived;
-            var guid = Guid.NewGuid();
-            string clientId = guid.ToString();
+        private void button1_Click(object sender, EventArgs e)
+        {
+            PresentCard(1);
+        }
 
-            client.Connect(clientId);
-            client.Subscribe(new string[] { "acc/elev/0/rdr/tap/resp" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
-            client.Subscribe(new string[] { "acc/elev/1/rdr/tap/resp" }, new byte[] { MqttMsgBase.QOS_LEVEL_EXACTLY_ONCE });
+        private void button2_Click(object sender, EventArgs e)
+        {
+            PresentCard(2);
+        }
+
+        private void txtResponse_TextChanged(object sender, EventArgs e)
+        {
 
         }
 
-        private void client_MqttMsgPublishReceived(object sender, MqttMsgPublishEventArgs e)
+        private string GetResponseDescription(byte[] resp)
         {
-            // handle message received 
+            if (resp.Length < 2)
+                return "Invalid response";
 
-            if (e.Topic == "acc/elev/0/rdr/tap/resp")
+            switch (resp[1])
             {
-                car1timer.Stop();
-                Invoke((MethodInvoker)(() => { button1.BackColor = colors[(int)e.Message[0]]; }));
-                car1timer.Start();
-            } 
-            else
-                if (e.Topic == "acc/elev/1/rdr/tap/resp")
-                {
-                    car2timer.Stop();
-                    Invoke((MethodInvoker)(() => { button2.BackColor = colors[(int)e.Message[0]]; }));
-                    car2timer.Start();
+                case 68: // 'D'
+                    return "Card Declined";
+                case 69: // 'E'
+                    return "Card Approved";
+                case 70: // 'F'
+                    return "Alternate Card Approved";
+                default:
+                    return $"Unknown response code ({resp[1]})";
             }
         }
     }

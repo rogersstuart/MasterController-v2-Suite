@@ -1,6 +1,7 @@
 ﻿using MCICommon;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -121,10 +122,42 @@ namespace MasterControllerInterface
 
             ResetListEntryEditor();
 
-            if (lb3_index > -1 && V2LE_UsersInCurrentList != null && V2LE_UsersInCurrentList.Count() > 0)
+            // First ensure dictionaries are initialized
+            if (V2LE_ViewingLists == null) 
+                V2LE_ViewingLists = new Dictionary<UInt64, string>();
+        
+            if (V2LE_UsersInCurrentList == null)
+                V2LE_UsersInCurrentList = new Dictionary<UInt64, string>();
+
+            // Check bounds and valid state with better error handling
+            bool validState = 
+                lb3_index > -1 && lb5_index > -1 && 
+                V2LE_UsersInCurrentList != null && V2LE_UsersInCurrentList.Count() > 0 && 
+                V2LE_ViewingLists != null && V2LE_ViewingLists.Count() > 0 &&
+                lb5_index < V2LE_ViewingLists.Count() &&
+                lb3_index < V2LE_UsersInCurrentList.Count();
+
+            if (!validState)
             {
-                UInt64 selected_list_id = V2LE_ViewingLists.ElementAt(lb5_index).Key;
-                UInt64 selected_user_id = V2LE_UsersInCurrentList.ElementAt(lb3_index).Key;
+                Debug.WriteLine("[V2LE_RefreshListEntryEditor] Invalid state detected, returning");
+                return;
+            }
+
+            try
+            {
+                // Safe dictionary access with null checking
+                var listEntry = V2LE_ViewingLists.ElementAtSafe(lb5_index);
+                var userEntry = V2LE_UsersInCurrentList.ElementAtSafe(lb3_index);
+        
+                if (listEntry.Equals(default(KeyValuePair<UInt64, string>)) || 
+                    userEntry.Equals(default(KeyValuePair<UInt64, string>)))
+                {
+                    Debug.WriteLine("[V2LE_RefreshListEntryEditor] Unable to get valid list or user entry");
+                    return;
+                }
+        
+                UInt64 selected_list_id = listEntry.Key;
+                UInt64 selected_user_id = userEntry.Key;
 
                 List<Object> list_row = await DatabaseUtilities.GetV2ListEntry(selected_list_id, selected_user_id);
 
@@ -160,6 +193,11 @@ namespace MasterControllerInterface
                     Refresh();
                 }));
             }
+            catch (Exception ex)
+            {
+                Debug.WriteLine($"[V2LE_RefreshListEntryEditor] Exception: {ex.Message}");
+                // Don't rethrow - just log and continue
+            }
         }
 
         private async Task V2LE_FullRefresh()
@@ -179,7 +217,7 @@ namespace MasterControllerInterface
         //to be called by a ui thread
         private async Task V2LE_UA_ListUsers_Refresh()
         {
-            if (listBox5.SelectedIndex == -1)
+            if (listBox5.SelectedIndex == -1 || V2LE_ViewingLists == null || listBox5.SelectedIndex >= V2LE_ViewingLists.Count())
                 return;
 
             ulong selected_list = V2LE_ViewingLists.ElementAt(listBox5.SelectedIndex).Key;
@@ -228,7 +266,7 @@ namespace MasterControllerInterface
         //to be called by a ui thread
         private async Task V2LE_UA_UserLookup_Refresh()
         {
-            if (listBox5.SelectedIndex == -1)
+            if (listBox5.SelectedIndex == -1 || V2LE_ViewingLists == null || listBox5.SelectedIndex >= V2LE_ViewingLists.Count())
                 return;
 
             ulong selected_list = V2LE_ViewingLists.ElementAt(listBox5.SelectedIndex).Key;
@@ -287,6 +325,16 @@ namespace MasterControllerInterface
 
         private void V2LE_ResetAll()
         {
+            // Initialize dictionaries to prevent KeyNotFoundException errors
+            V2LE_ViewingLists = new Dictionary<UInt64, string>();
+            V2LE_UsersInCurrentList = new Dictionary<UInt64, string>();
+            V2LE_UsersNotInCurrentList = new Dictionary<UInt64, string>();
+            V2LE_ViewingDevices = new Dictionary<UInt64, string>();
+
+            // Log the initialization
+            Debug.WriteLine("[MCIv2Form] V2LE dictionaries initialized");
+
+            // Preserve existing behavior
             V2LE_ResetListSelection();
             V2LE_ResetUserAssignment();
             ResetListEntryEditor();
@@ -318,7 +366,7 @@ namespace MasterControllerInterface
             V2LE_RefreshUserAssignment_Busy = true;
 
             //change edit button states
-            if (listBox5.SelectedIndex > -1)
+            if (listBox5.SelectedIndex > -1 && V2LE_ViewingLists != null && listBox5.SelectedIndex < V2LE_ViewingLists.Count())
             {
                 button15.Enabled = true;
                 button16.Enabled = true;
@@ -329,6 +377,8 @@ namespace MasterControllerInterface
                 button16.Enabled = false;
 
                 //everything should be invalidated here
+                V2LE_RefreshUserAssignment_Busy = false;
+                return;
             }
 
             ulong selected_list_uid = V2LE_ViewingLists.ElementAt(listBox5.SelectedIndex).Key;

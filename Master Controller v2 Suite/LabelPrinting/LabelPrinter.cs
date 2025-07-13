@@ -3,14 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using DYMO.Label.Framework;
-using Zen.Barcode;
 using System.IO;
+using Zen.Barcode;
+
+#if DYMO_SDK
+using DYMO.Label.Framework;
+#endif
 
 namespace LabelPrinting
 {
     public class LabelPrinter
     {
+#if DYMO_SDK
         ILabel label;
 
         public LabelPrinter(string file_name = "two_up.label")
@@ -83,5 +87,21 @@ namespace LabelPrinting
             catch (Exception ex)
             { }
         }
+#else
+        public LabelPrinter(string file_name = "two_up.label")
+        {
+            throw new NotSupportedException("DYMO SDK is not available. Define DYMO_SDK to enable label printing.");
+        }
+
+        public void PrintLabel(string barcode_str)
+        {
+            throw new NotSupportedException("DYMO SDK is not available. Define DYMO_SDK to enable label printing.");
+        }
+
+        public void PrintTwoLabel(string barcode_str_a, string barcode_str_b)
+        {
+            throw new NotSupportedException("DYMO SDK is not available. Define DYMO_SDK to enable label printing.");
+        }
+#endif
     }
 }

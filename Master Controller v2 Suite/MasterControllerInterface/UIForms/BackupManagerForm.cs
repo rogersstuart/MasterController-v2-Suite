@@ -57,11 +57,31 @@ namespace MasterControllerInterface
 
         private async Task LoadBackupInfo()
         {
-            var files = Directory.GetFiles(AppDomain.CurrentDomain.BaseDirectory + "backups\\");
+            var backupDir = AppDomain.CurrentDomain.BaseDirectory + "backups\\";
+            
+            // Ensure the backup directory exists
+            if (!Directory.Exists(backupDir))
+            {
+                Directory.CreateDirectory(backupDir);
+                return;
+            }
+            
+            var files = Directory.GetFiles(backupDir, "*.db2bak");
 
             backups.Clear();
             foreach(var file in files)
-                backups.Add(file, await DBBackupAndRestore.GetBackupProperties(file));
+            {
+                try
+                {
+                    var properties = await DBBackupAndRestore.GetBackupProperties(file);
+                    backups.Add(file, properties);
+                }
+                catch (Exception ex)
+                {
+                    // Skip invalid backup files
+                    Console.WriteLine($"Skipping invalid backup file {Path.GetFileName(file)}: {ex.Message}");
+                }
+            }
 
             backups = backups.OrderBy(x => x.Value.Timestamp).Reverse().ToDictionary(x => x.Key, x => x.Value);
         }
@@ -85,20 +105,32 @@ namespace MasterControllerInterface
             var cfg = MCv2Persistance.Instance.Config;
 
             ProgressDialog pgd = new ProgressDialog("Database Restore");
-
             pgd.Show();
             pgd.SetMarqueeStyle();
 
-            var backup_filename = backups.Keys.ElementAt(dataGridView1.SelectedRows[0].Index);
+            try
+            {
+                var backup_filename = backups.Keys.ElementAt(dataGridView1.SelectedRows[0].Index);
 
-            pgd.LabelText = "Restoring from " + new FileInfo(backup_filename).Name;
+                pgd.LabelText = "Restoring from " + new FileInfo(backup_filename).Name;
 
-            await DBBackupAndRestore.Restore(backup_filename);
+                await DBBackupAndRestore.Restore(backup_filename);
+                
+                MessageBox.Show("Database restored successfully!", "Success", 
+                               MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Failed to restore database:\n\n{ex.Message}", 
+                               "Restore Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                pgd.Dispose();
 
-            pgd.Dispose();
-
-            for (int i = 0; i < enable_states.Count; i++)
-                Controls[i].Enabled = enable_states[i];
+                for (int i = 0; i < enable_states.Count; i++)
+                    Controls[i].Enabled = enable_states[i];
+            }
         }
 
         private async void button4_Click(object sender, EventArgs e)

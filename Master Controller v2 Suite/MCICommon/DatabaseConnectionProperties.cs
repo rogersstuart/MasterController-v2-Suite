@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Net;
 using System.Runtime.Serialization;
 using Newtonsoft.Json;
+using System.Diagnostics;
 
 namespace MCICommon
 {
@@ -87,14 +88,26 @@ namespace MCICommon
         }
 
         [JsonIgnore]
-        public string ConnectionString
+        public string ConnectionString 
         {
-            get
+            get 
             {
-                if(schema != null && schema.Trim() != "")
-                    return "Server=" + Dns.GetHostAddresses(hostname)[0].ToString() + ";Uid=" + uid + ";Pwd=" + password + ";Database=" + schema + "; Allow User Variables=True;";
-                else
-                    return "Server=" + Dns.GetHostAddresses(hostname)[0].ToString() + ";Uid=" + uid + ";Pwd=" + password + ";Database=" + "accesscontrol" + "; Allow User Variables=True;";
+                try
+                {
+                    // Use the enhanced connection string method
+                    return this.CreateEnhancedConnectionString();
+                }
+                catch (Exception ex)
+                {
+                    Debug.WriteLine($"[DatabaseConnectionProperties] Error creating connection string: {ex.Message}");
+                    
+                    // Fallback to basic connection string with standard utf8 support
+                    return $"server={Hostname};" +
+                           $"user id={UID};" +
+                           $"password={Password};" +
+                           $"database={Schema};" +
+                           $"charset=utf8"; // Use standard utf8 for fallback
+                }
             }
         }
 

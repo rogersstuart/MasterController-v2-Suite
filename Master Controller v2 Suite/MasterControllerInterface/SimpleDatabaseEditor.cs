@@ -149,66 +149,40 @@ namespace MasterControllerInterface
 
         private string[] GenerateDefaults(int default_option)
         {
-            //refrence
-            //"Full Access", "Building Employee", "School Employee", "Student", "3rd Floor Tenant", "4th Floor Tenant",
-            //"6th Floor Tenant", "7th Floor Tenant", "9th Floor Tenant", "12th Floor Tenant", "13th Floor Tenant"
-
             switch(default_option)
             {
-                //full access
                 case 0:
                     return new string[] { "Sunday-Saturday", "00:00-23:59"};
-                    break;
                 
-                //building employee
                 case 1:
                     return new string[] { "Sunday-Saturday", "00:00-23:59" };
-                    break;
                 
-                //school employee
                 case 2:
                     return new string[] { "Sunday-Saturday", "00:00-23:59" };
-                    break;
                 
-                //student
                 case 3:
                     return new string[] { "Sunday-Saturday", "00:00-23:59" };
-                    break;
 
-                //3rd floor
                 case 4:
                     return new string[] { "Sunday-Saturday", "00:00-23:59" };
-                    break;
 
-                //4th floor
                 case 5:
                     return new string[] { "Sunday-Saturday", "00:00-23:59" };
-                    break;
 
-                //6th floor
                 case 6:
                     return new string[] { "Sunday-Saturday", "00:00-23:59" };
-                    break;
 
-                //7th floor
                 case 7:
                     return new string[] { "Sunday-Saturday", "00:00-23:59" };
-                    break;
 
-                //9th floor
                 case 8:
                     return new string[] { "Sunday-Saturday", "00:00-23:59" };
-                    break;
 
-                //12th floor
                 case 9:
                     return new string[] { "Sunday-Saturday", "00:00-23:59" };
-                    break;
 
-                //13th floor
                 case 10:
                     return new string[] { "Sunday-Saturday", "00:00-23:59" };
-                    break;
 
                 default:
                     throw new Exception("Invalid Default Selected");
@@ -231,6 +205,7 @@ namespace MasterControllerInterface
         {
             //delete button
             MessageBox.Show(this, "Sorry but this feature is currently unimplemented.");
+            return; // Add this return statement to prevent unreachable code warning
         }
 
         private void textBox1_TextChanged(object sender, EventArgs e)

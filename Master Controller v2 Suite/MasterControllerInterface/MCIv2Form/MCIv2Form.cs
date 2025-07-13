@@ -63,149 +63,272 @@ namespace MasterControllerInterface
 
         public MCIv2Form()
         {
-            var cfg = MCv2Persistance.Instance.Config;
-            var bcfg = cfg.BackupConfiguration;
-
-            if (bcfg.EnableAutoBackup)
+            ProgressDialog pgd = null;
+            Debug.WriteLine("[MCIv2Form] Constructor entered.");
+            try
             {
-                ProgressDialog pgd = new ProgressDialog("Database Backup");
-                pgd.Show();
-                pgd.SetMarqueeStyle();
+                Debug.WriteLine("[MCIv2Form] Loading configuration...");
+                var cfg = MCv2Persistance.Instance.Config;
+                var bcfg = cfg.BackupConfiguration;
 
-                var now_is = DateTime.Now;
-                var backup_filename = "auto_backup_" + cfg.DatabaseConfiguration.DatabaseConnectionProperties.Hostname.Replace('.', '_') + "_" + cfg.DatabaseConfiguration.DatabaseConnectionProperties.Schema + "_" + now_is.Year + "_" + now_is.Month + "_" + now_is.Day + "_" + now_is.ToFileTimeUtc().ToString();
+                Debug.WriteLine("[MCIv2Form] Checking DatabaseConnectionProperties...");
+                if (cfg.DatabaseConfiguration == null)
+                    Debug.WriteLine("[MCIv2Form] cfg.DatabaseConfiguration is null.");
+                if (cfg.DatabaseConfiguration.DatabaseConnectionProperties == null)
+                    Debug.WriteLine("[MCIv2Form] cfg.DatabaseConfiguration.DatabaseConnectionProperties is null.");
 
-                pgd.LabelText = "Saving backup to " + backup_filename + ".db2bak";
+                Debug.WriteLine("[MCIv2Form] Hostname: " + cfg.DatabaseConfiguration.DatabaseConnectionProperties.Hostname);
+                Debug.WriteLine("[MCIv2Form] Schema: " + cfg.DatabaseConfiguration.DatabaseConnectionProperties.Schema);
+                Debug.WriteLine("[MCIv2Form] UID: " + cfg.DatabaseConfiguration.DatabaseConnectionProperties.UID);
 
-                DBBackupAndRestore.Backup("./backups/" + backup_filename + ".db2bak").Wait();
-
-                pgd.Dispose();
-
-                bcfg.LastAutoBackupTimestamp = DateTime.Now;
-            }
-
-            if (bcfg.EnableBackupNag && (DateTime.Now - bcfg.LastNagBackupTimestamp) > bcfg.BackupNagInterval)
-            {
-                var res = MessageBox.Show(this, "It's been " + (DateTime.Now - bcfg.LastNagBackupTimestamp).TotalDays + " days since the last local database backup." +Environment.NewLine
-                    + "Would you like to perform a backup now?", "Warning", MessageBoxButtons.YesNo);
-
-                if (res == DialogResult.Yes)
+                // Defensive checks
+                if (string.IsNullOrWhiteSpace(cfg.DatabaseConfiguration.DatabaseConnectionProperties.Hostname) ||
+                    string.IsNullOrWhiteSpace(cfg.DatabaseConfiguration.DatabaseConnectionProperties.Schema) ||
+                    string.IsNullOrWhiteSpace(cfg.DatabaseConfiguration.DatabaseConnectionProperties.UID) ||
+                    string.IsNullOrWhiteSpace(cfg.DatabaseConfiguration.DatabaseConnectionProperties.Password))
                 {
-                    //backup database
-                    string file_name = null;
-
-                    using (SaveFileDialog sfd = new SaveFileDialog())
+                    Debug.WriteLine("[MCIv2Form] Database connection settings are incomplete.");
+                    MessageBox.Show("Database connection settings are incomplete. Please configure the database connection.", "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    var dbconneditor = new DatabaseConnectionEditor(cfg.DatabaseConfiguration.DatabaseConnectionProperties, false);
+                    if (dbconneditor.ShowDialog() == DialogResult.OK)
                     {
-                        sfd.Filter = "Supported Extentions (*.db2bak)|*.db2bak";
-                        sfd.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
-                        var now_is = DateTime.Now;
-                        sfd.FileName = cfg.DatabaseConfiguration.DatabaseConnectionProperties.Hostname.Replace('.', '_') + "_" + cfg.DatabaseConfiguration.DatabaseConnectionProperties.Schema + "_" + now_is.Year + "_" + now_is.Month + "_" + now_is.Day + "_" + now_is.ToFileTimeUtc().ToString();
-
-                        if (sfd.ShowDialog() == DialogResult.OK)
-                            file_name = sfd.FileName;
+                        cfg.DatabaseConfiguration.DatabaseConnectionProperties = dbconneditor.DBConnProp;
+                        MCv2Persistance.Instance.Config = cfg;
                     }
-
-                    if (file_name != null)
+                    else
                     {
-                        ProgressDialog pgd = new ProgressDialog("Database Backup");
+                        this.Close();
+                        return;
+                    }
+                }
+
+                Debug.WriteLine("[MCIv2Form] AutoBackup: " + bcfg.EnableAutoBackup);
+                Debug.WriteLine("[MCIv2Form] BackupNag: " + bcfg.EnableBackupNag);
+
+                if (bcfg.EnableAutoBackup)
+                {
+                    Debug.WriteLine("[MCIv2Form] Starting auto-backup...");
+                    try
+                    {
+                        pgd = new ProgressDialog("Database Backup");
                         pgd.Show();
                         pgd.SetMarqueeStyle();
 
-                        pgd.LabelText = "Saving backup to " + file_name;
-                        DBBackupAndRestore.Backup(file_name).Wait();
+                        var now_is = DateTime.Now;
+                        var backup_filename = "auto_backup_" + cfg.DatabaseConfiguration.DatabaseConnectionProperties.Hostname.Replace('.', '_') + "_" + cfg.DatabaseConfiguration.DatabaseConnectionProperties.Schema + "_" + now_is.Year + "_" + now_is.Month + "_" + now_is.Day + "_" + now_is.ToFileTimeUtc().ToString();
+
+                        pgd.LabelText = "Saving backup to " + backup_filename + ".db2bak";
+
+                        DBBackupAndRestore.Backup("./backups/" + backup_filename + ".db2bak").Wait();
 
                         pgd.Dispose();
+                        pgd = null;
 
-                        bcfg.LastNagBackupTimestamp = DateTime.Now;
+                        bcfg.LastAutoBackupTimestamp = DateTime.Now;
+                    }
+                    catch (Exception ex)
+                    {
+                        // Ensure progress dialog is disposed on backup error
+                        if (pgd != null)
+                        {
+                            pgd.Dispose();
+                            pgd = null;
+                        }
+                        
+                        // Skip backup on error, don't prevent form from loading
+                        MessageBox.Show("Database backup failed: " + ex.Message, "Backup Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                     }
                 }
-            }
 
-            MCv2Persistance.Instance.Config = cfg;
-
-            InitializeComponent();
-
-            //context menu
-            toolStripMenuItem2.Click += (a, b) => {
-                Clipboard.SetText(new Func<string>(() =>
+                if (bcfg.EnableBackupNag && (DateTime.Now - bcfg.LastNagBackupTimestamp) > bcfg.BackupNagInterval)
                 {
-                    var str = "";
-                    var items = listBox2.Items.Cast<string>();
-                    foreach (var item in items)
-                        str += item + Environment.NewLine;
-                    return str;
-                }).Invoke());};
+                    Debug.WriteLine("[MCIv2Form] Triggering backup nag...");
+                    var res = MessageBox.Show(this, "It's been " + (DateTime.Now - bcfg.LastNagBackupTimestamp).TotalDays + " days since the last local database backup." +Environment.NewLine
+                        + "Would you like to perform a backup now?", "Warning", MessageBoxButtons.YesNo);
 
-            DoubleBuffered = true;
-
-            var version_strings = Assembly.GetExecutingAssembly().GetName().Version.ToString().Split('.');
-            var version_string = "MCI v" + version_strings[0] + "." + version_strings[1] + " Prerelease " + version_strings[2] + "." + version_strings[3];
-            Text = version_string;
-
-            //Set double buffering on the gridview using reflection and the bindingflags enum.
-            typeof(DataGridView).InvokeMember("DoubleBuffered", BindingFlags.NonPublic |
-            BindingFlags.Instance | BindingFlags.SetProperty, null,
-            dataGridView1, new object[] { true });
-
-            card_lookup_controls.Add(listBox1);
-            card_lookup_controls.Add(textBox3);
-            card_lookup_controls.Add(button1);
-            card_lookup_controls.Add(listBox2);
-            card_lookup_controls.Add(button2);
-            card_lookup_controls.Add(button22);
-
-            update_holdoff_timer.Elapsed += async (s, ea) =>
-            {
-                rct = new CancellationTokenSource();
-
-                update_holdoff_timer.Stop();
-
-                //try
-                //{
-                    await Task.Run(async () =>
+                    if (res == DialogResult.Yes)
                     {
-                        string tb0 = "", tb1 = "";
+                        //backup database
+                        string file_name = null;
 
-                        Invoke((MethodInvoker)(() =>
+                        using (SaveFileDialog sfd = new SaveFileDialog())
                         {
-                            tb0 = textBox1.Text.Trim();
-                            tb1 = textBox3.Text.Trim();
+                            sfd.Filter = "Supported Extentions (*.db2bak)|*.db2bak";
+                            sfd.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments);
+                            var now_is = DateTime.Now;
+                            sfd.FileName = cfg.DatabaseConfiguration.DatabaseConnectionProperties.Hostname.Replace('.', '_') + "_" + cfg.DatabaseConfiguration.DatabaseConnectionProperties.Schema + "_" + now_is.Year + "_" + now_is.Month + "_" + now_is.Day + "_" + now_is.ToFileTimeUtc().ToString();
 
-                            textBox3.Text = "";
+                            if (sfd.ShowDialog() == DialogResult.OK)
+                                file_name = sfd.FileName;
+                        }
 
-                            textBox1.BackColor = Color.LightCyan;
-
-                            Refresh();
-                        }));
-
-                        //RemoveDataGridView1Events();
-                        await UserLookupAndDisplay(tb0, true, rct);
-                        //RestoreDataGridView1Events();
-
-                        //if there are rows displayed then refresh card lookup and display
-
-                        //var selected_users = ULAD_GetSelectedUsers();
-                        //if(selected_users.Count() > 0)
-                        //{
-                        //await CardLookupAndDisplay(selected_user, tb1, true);
-                        //}
-
-                        Invoke((MethodInvoker)(() =>
+                        if (file_name != null)
+                        {
+                            try
                             {
-                                textBox1.BackColor = SystemColors.Window;
+                                pgd = new ProgressDialog("Database Backup");
+                                pgd.Show();
+                                pgd.SetMarqueeStyle();
 
+                                pgd.LabelText = "Saving backup to " + file_name;
+                                DBBackupAndRestore.Backup(file_name).Wait();
+
+                                pgd.Dispose();
+                                pgd = null;
+
+                                bcfg.LastNagBackupTimestamp = DateTime.Now;
+                            }
+                            catch (Exception ex)
+                            {
+                                // Ensure progress dialog is disposed on manual backup error
+                                if (pgd != null)
+                                {
+                                    pgd.Dispose();
+                                    pgd = null;
+                                }
+                                
+                                MessageBox.Show("Manual backup failed: " + ex.Message, "Backup Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                            }
+                        }
+                    }
+                }
+
+                MCv2Persistance.Instance.Config = cfg;
+
+                InitializeComponent();
+                Debug.WriteLine("[MCIv2Form] UI components initialized.");
+
+                //context menu
+                toolStripMenuItem2.Click += (a, b) => {
+                    Clipboard.SetText(new Func<string>(() =>
+                    {
+                        var str = "";
+                        var items = listBox2.Items.Cast<string>();
+                        foreach (var item in items)
+                            str += item + Environment.NewLine;
+                        return str;
+                    }).Invoke());};
+
+                DoubleBuffered = true;
+
+                var version_strings = Assembly.GetExecutingAssembly().GetName().Version.ToString().Split('.');
+                var version_string = "MCI v" + version_strings[0] + "." + version_strings[1] + " Prerelease " + version_strings[2] + "." + version_strings[3];
+                Text = version_string;
+
+                //Set double buffering on the gridview using reflection and the bindingflags enum.
+                typeof(DataGridView).InvokeMember("DoubleBuffered", BindingFlags.NonPublic |
+                BindingFlags.Instance | BindingFlags.SetProperty, null,
+                dataGridView1, new object[] { true });
+
+                card_lookup_controls.Add(listBox1);
+                card_lookup_controls.Add(textBox3);
+                card_lookup_controls.Add(button1);
+                card_lookup_controls.Add(listBox2);
+                card_lookup_controls.Add(button2);
+                card_lookup_controls.Add(button22);
+
+                update_holdoff_timer.Elapsed += async (s, ea) =>
+                {
+                    rct = new CancellationTokenSource();
+                    update_holdoff_timer.Stop();
+
+                    try
+                    {
+                        await Task.Run(async () =>
+                        {
+                            string tb0 = "", tb1 = "";
+
+                            Invoke((MethodInvoker)(() =>
+                            {
+                                tb0 = textBox1.Text.Trim();
+                                tb1 = textBox3.Text.Trim();
+
+                                textBox3.Text = "";
+                                textBox1.BackColor = Color.LightCyan;
                                 Refresh();
                             }));
 
-                    }, rct.Token);
-                //}
-                //catch (Exception ex) { }
+                            await UserLookupAndDisplay(tb0, true, rct);
 
-                rct.Dispose();
-                rct = null;
-            };
+                            Invoke((MethodInvoker)(() =>
+                            {
+                                textBox1.BackColor = SystemColors.Window;
+                                Refresh();
+                            }));
+                        }, rct.Token);
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.WriteLine("[update_holdoff_timer.Elapsed] Exception: " + ex);
+                        Debug.WriteLine("[update_holdoff_timer.Elapsed] Type: " + ex.GetType().FullName);
+                        Debug.WriteLine("[update_holdoff_timer.Elapsed] StackTrace: " + ex.StackTrace);
+                        if (ex.InnerException != null)
+                        {
+                            Debug.WriteLine("[update_holdoff_timer.Elapsed] InnerException: " + ex.InnerException);
+                            Debug.WriteLine("[update_holdoff_timer.Elapsed] InnerException Type: " + ex.InnerException.GetType().FullName);
+                            Debug.WriteLine("[update_holdoff_timer.Elapsed] InnerException StackTrace: " + ex.InnerException.StackTrace);
+                        }
+                    }
+                    finally
+                    {
+                        rct.Dispose();
+                        rct = null;
+                    }
+                };
 
-            V2LE_ResetAll();
+                V2LE_ResetAll();
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine("[MCIv2Form] Exception: " + ex);
+                Debug.WriteLine("[MCIv2Form] Exception Type: " + ex.GetType().FullName);
+                Debug.WriteLine("[MCIv2Form] Exception StackTrace: " + ex.StackTrace);
+                if (ex.InnerException != null)
+                {
+                    Debug.WriteLine("[MCIv2Form] InnerException: " + ex.InnerException);
+                    Debug.WriteLine("[MCIv2Form] InnerException Type: " + ex.InnerException.GetType().FullName);
+                    Debug.WriteLine("[MCIv2Form] InnerException StackTrace: " + ex.InnerException.StackTrace);
+                }
+                // Ensure any open progress dialogs are disposed before showing error
+                if (pgd != null)
+                {
+                    pgd.Dispose();
+                    pgd = null;
+                }
+
+                // Database error - return to login
+                MessageBox.Show("Database Error: The database appears to be corrupted or inaccessible.\n\n" +
+                               "You will be returned to the connection settings to reconfigure the database connection.\n\n" +
+                               "Error details: " + ex.Message, 
+                               "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+                // Hide this form immediately
+                this.WindowState = FormWindowState.Minimized;
+                this.ShowInTaskbar = false;
+                this.Visible = false;
+
+                // Show database connection editor
+                Task.Run(() =>
+                {
+                    var config = MCv2Persistance.Instance.Config;
+                    var dbconneditor = new DatabaseConnectionEditor(config.DatabaseConfiguration.DatabaseConnectionProperties, false);
+                    
+                    // Show on UI thread
+                    this.Invoke(new Action(() =>
+                    {
+                        var result = dbconneditor.ShowDialog();
+                        if (result == DialogResult.OK)
+                        {
+                            // Update config with new connection
+                            config.DatabaseConfiguration.DatabaseConnectionProperties = dbconneditor.DBConnProp;
+                            MCv2Persistance.Instance.Config = config;
+                        }
+                        
+                        // Close this corrupted form instance
+                        this.Close();
+                    }));
+                });
+            }
         }
 
         //helps to prevent flicker
@@ -337,33 +460,44 @@ namespace MasterControllerInterface
 
         private async Task FullUIRefresh()
         {
-            var config = MCv2Persistance.Instance.Config;
-
-            encodeUIDsToolStripMenuItem.Checked = config.UIConfiguration.EncodeDisplayedUIDsFlag;
-            //syncTimeAfterUploadsToolStripMenuItem.Checked = config.SyncTimeAfterUploadsFlag;
-
-            display_uids_in_short_form = config.UIConfiguration.EncodeDisplayedUIDsFlag;
-            sync_time_after_uploads = config.SyncTimeAfterUploadsFlag;
-
-            string selected_tab = tabControl1.SelectedTab.Name;
-
-            if (selected_tab == "tabPage2")
+            try
             {
-                await ULAD_UserGroupsRefresh(MCv2Persistance.Instance.Config.UIConfiguration.SelectedGroup);
-                //comboBox1.SelectedIndex = 0;
-                //RemoveDataGridView1Events();
-                await UserLookupAndDisplay(textBox1.Text.Trim(), true);
-                //RestoreDataGridView1Events();
-                //await CardLookupAndDisplay(selected_user, textBox3.Text.Trim(), true);
-                if(IsHandleCreated)
-                    Invoke((MethodInvoker)(() =>
-                    {
-                        dataGridView1.Focus();
-                    }));
-            }
+                var config = MCv2Persistance.Instance.Config;
 
-            if (selected_tab == "tabPage1")
-                await V2LE_FullRefresh();
+                encodeUIDsToolStripMenuItem.Checked = config.UIConfiguration.EncodeDisplayedUIDsFlag;
+                //syncTimeAfterUploadsToolStripMenuItem.Checked = config.SyncTimeAfterUploadsFlag;
+
+                display_uids_in_short_form = config.UIConfiguration.EncodeDisplayedUIDsFlag;
+                sync_time_after_uploads = config.SyncTimeAfterUploadsFlag;
+
+                string selected_tab = tabControl1.SelectedTab.Name;
+
+                if (selected_tab == "tabPage2")
+                {
+                    await ULAD_UserGroupsRefresh(MCv2Persistance.Instance.Config.UIConfiguration.SelectedGroup);
+                    //comboBox1.SelectedIndex = 0;
+                    //RemoveDataGridView1Events();
+                    await UserLookupAndDisplay(textBox1.Text.Trim(), true);
+                    //RestoreDataGridView1Events();
+                    //await CardLookupAndDisplay(selected_user, textBox3.Text.Trim(), true);
+                    if(IsHandleCreated)
+                        Invoke((MethodInvoker)(() =>
+                        {
+                            dataGridView1.Focus();
+                        }));
+                }
+
+                if (selected_tab == "tabPage1")
+                {
+                    // Reset the V2LE state before refresh to avoid dictionary access errors
+                    V2LE_ResetAll();
+                    await V2LE_FullRefresh();
+                }
+            }
+            catch (Exception ex)
+            {
+                HandleDatabaseError(ex);
+            }
         }
 
         bool ignore_cb1_event = false;
@@ -540,5 +674,63 @@ namespace MasterControllerInterface
         
        
         
+        private void HandleDatabaseError(Exception ex)
+{
+    // Ensure we're on the UI thread
+    if (this.InvokeRequired)
+    {
+        this.Invoke(new Action(() => HandleDatabaseError(ex)));
+        return;
+    }
+
+    // Determine if this is a database-related error
+    bool isDatabaseError = ex is MySqlException || 
+                          ex is System.Collections.Generic.KeyNotFoundException ||
+                          ex.InnerException is MySqlException ||
+                          ex.InnerException is System.Collections.Generic.KeyNotFoundException;
+
+    if (isDatabaseError)
+    {
+        MessageBox.Show("Database Error: The database appears to be corrupted or inaccessible.\n\n" +
+                       "You will be returned to the connection settings to reconfigure the database connection.\n\n" +
+                       "Error details: " + ex.Message, 
+                       "Database Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+
+        // Hide this form immediately
+        this.WindowState = FormWindowState.Minimized;
+        this.ShowInTaskbar = false;
+        this.Visible = false;
+
+        // Show database connection editor on UI thread
+        var config = MCv2Persistance.Instance.Config;
+        var dbconneditor = new DatabaseConnectionEditor(config.DatabaseConfiguration.DatabaseConnectionProperties, false);
+        
+        // Bring the dialog to the foreground
+        dbconneditor.TopMost = true;
+        dbconneditor.StartPosition = FormStartPosition.CenterScreen;
+        dbconneditor.WindowState = FormWindowState.Normal;
+        
+        var result = dbconneditor.ShowDialog();
+        
+        // Reset TopMost after showing
+        dbconneditor.TopMost = false;
+        
+        if (result == DialogResult.OK)
+        {
+            // Update config with new connection
+            config.DatabaseConfiguration.DatabaseConnectionProperties = dbconneditor.DBConnProp;
+            MCv2Persistance.Instance.Config = config;
+        }
+        
+        // Close this corrupted form instance
+        this.Close();
+    }
+    else
+    {
+        // For non-database errors, show error and close
+        new ErrorBox(ex.Message + (ex.InnerException != null ? Environment.NewLine + ex.InnerException.Message : ""), ex.ToString()).ShowDialog();
+        this.Close();
+    }
+}
     }
 }
